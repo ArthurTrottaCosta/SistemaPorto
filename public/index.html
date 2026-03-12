@@ -376,15 +376,72 @@ function fileToBase64(file) {
   });
 }
 
+// ── Extração 100% no browser, sem servidor ──────────────────────
+async function extrairTextoPDFjs(base64) {
+  if (!window.pdfjsLib) {
+    await new Promise((res, rej) => {
+      const s = document.createElement('script');
+      s.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+      s.onload = res; s.onerror = rej;
+      document.head.appendChild(s);
+    });
+    window.pdfjsLib.GlobalWorkerOptions.workerSrc =
+      'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  }
+  const bin = atob(base64);
+  const arr = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+  const pdf  = await pdfjsLib.getDocument({ data: arr }).promise;
+  const page = await pdf.getPage(1);
+  const content = await page.getTextContent();
+  return content.items.map(i => i.str).join(' ');
+}
+
+function parsearDANFE(texto) {
+  const r = {};
+
+  // Número da NF
+  const mNF = texto.match(/N[\u00ba\u00b0o][:\s]+(\d{3,6})/);
+  if (mNF) r.numero_nf = mNF[1];
+
+  // Data de saída ou emissão
+  let mData = texto.match(/Emiss[\u00e3a]o\s+(\d{2}\/\d{2}\/\d{4})/);
+  if (!mData) mData = texto.match(/(\d{2}\/\d{2}\/\d{4})/);
+  if (mData) { const [d,mo,y]=mData[1].split('/'); r.data=y+'-'+mo+'-'+d; }
+
+  // Placa
+  const mPlaca = texto.match(/\b([A-Z]{3}[-\s]?\d[A-Z0-9]\d{2})\b/);
+  r.placa = mPlaca ? mPlaca[1].replace(/[-\s]/g,'') : null;
+
+  // Produto: NCM + CSO + CFOP + UNIDADE + QUANTIDADE
+  const mProd = texto.match(/(\d{7,8})\s+\d{3,4}\s+\d{4}\s+(TON|M3|KG|UN)\s+([\d,]+)/);
+  if (mProd) {
+    const un  = mProd[2];
+    const qtd = parseFloat(mProd[3].replace(',','.'));
+    r.peso_carga_kg = un==='KG' ? Math.round(qtd) : Math.round(qtd*1000);
+
+    // Material: palavras antes do NCM, ignorando cabeçalhos de coluna
+    const CABECALHOS = new Set(['TOTAL','ICMS','IPI','ALIQ','UNIT','SN','BC','CFOP','NCM','CSO','UNID','QUANT','VALOR','PROD','DESC','DESCRICAO']);
+    const antes = texto.slice(0, texto.indexOf(mProd[0])).trim().split(/\s+/);
+    const mat = [];
+    for (let i = antes.length - 1; i >= 0; i--) {
+      const w = antes[i].replace(/[^\w]/g,'');
+      if (CABECALHOS.has(w) || /\d/.test(w)) break;
+      mat.unshift(antes[i]);
+    }
+    // remover código do produto (primeira palavra curta toda maiúscula)
+    if (mat.length > 0 && /^[A-Z]{2,5}$/.test(mat[0])) mat.shift();
+    r.material = mat.join(' ').trim().toUpperCase();
+  }
+
+  return r;
+}
+
 async function extractFromPDF(base64, filename) {
-  const resp = await fetch('/api/extract', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ base64, filename })
-  });
-  const json = await resp.json();
-  if (!resp.ok || json.error) throw new Error(json.error || 'Erro no servidor');
-  return json.data;
+  const texto = await extrairTextoPDFjs(base64);
+  const dados = parsearDANFE(texto);
+  if (!dados.numero_nf) throw new Error('PDF nao reconhecido como DANFE valido.');
+  return dados;
 }
 
 // ══════════════════════════════════
