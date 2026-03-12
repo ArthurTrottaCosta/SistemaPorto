@@ -200,7 +200,7 @@ main { max-width:640px; margin:0 auto; padding:20px 14px 60px; }
     <div class="card-body" id="truck-body">
       <p class="hint-text">Cadastre cada caminhão uma vez. Ao lançar a NF, a tara aparece automaticamente pela placa.</p>
       <table class="tbl">
-        <thead><tr><th>Placa</th><th>Tara (KG)</th><th style="width:38px"></th></tr></thead>
+        <thead><tr><th>Placa</th><th>Tara (KG)</th><th>Motorista</th><th style="width:38px"></th></tr></thead>
         <tbody id="plate-body"></tbody>
       </table>
       <button class="btn-add" onclick="addPlateRow()">＋ Adicionar caminhão</button>
@@ -279,20 +279,43 @@ function toggleTrucks() {
 }
 
 function savePlates() {
-  plates = {};
+  plates = Object.assign({}, PLACAS_BASE); // mantém base
+  // sobrescreve com edições locais
+  const local = {};
   document.querySelectorAll('#plate-body tr').forEach(r => {
     const inp = r.querySelectorAll('input');
     const pl  = inp[0].value.trim().toUpperCase().replace(/[^A-Z0-9]/g,'');
     const ta  = parseInt(inp[1].value) || 0;
-    if (pl) plates[pl] = ta;
+    const mot = inp[2] ? inp[2].value.trim() : '';
+    if (pl) {
+      plates[pl] = { tara: ta, motorista: mot };
+      local[pl]  = { tara: ta, motorista: mot };
+    }
   });
-  try { localStorage.setItem('pf_plates', JSON.stringify(plates)); } catch(e) {}
-  // refresh all note cards that already have a plate
+  try { localStorage.setItem('pf_plates', JSON.stringify(local)); } catch(e) {}
   notes.forEach(n => { if (n.data?.placa) refreshCalc(n.id); });
 }
 
+// Dados base das placas (vêm da planilha oficial)
+const PLACAS_BASE = {"EZZ7J49": {"tara": 11420, "motorista": "JOSE EDMILSON"}, "GEC2D25": {"tara": 10600, "motorista": "SEVERINO (BIU)"}, "STR7J73": {"tara": 9550, "motorista": "THIAGO"}, "FCQ0152": {"tara": 9600, "motorista": "ANDERSON"}, "TIV6G18": {"tara": 9600, "motorista": "HAMILTON"}, "TLL2G96": {"tara": 9500, "motorista": "GLEIDSON"}, "TIU4E58": {"tara": 9600, "motorista": "JONATHAN"}, "FPB7C07": {"tara": 9600, "motorista": "NIVALDO"}, "FXU8A25": {"tara": 9400, "motorista": "RENATO"}, "FIK1H91": {"tara": 9550, "motorista": ""}, "TIP8E27": {"tara": 10000, "motorista": "CARLOS"}, "DZF7590": {"tara": 10000, "motorista": "BOLSA"}, "BXH7A70": {"tara": 9800, "motorista": "CARLINHOS"}, "BXB6894": {"tara": 10200, "motorista": "CARNEIRO"}, "GUD6E90": {"tara": 9500, "motorista": "COELHO"}, "BXC8I45": {"tara": 10200, "motorista": "DIGÃO"}, "CYY7I36": {"tara": 8500, "motorista": "DIGÃO (GUSTAVO)"}, "GSV9C25": {"tara": 11000, "motorista": "FABIANO"}, "NGL0I99": {"tara": 9400, "motorista": "GABRIEL"}, "DQG0H87": {"tara": 10000, "motorista": "GUGA"}, "CYR8B37": {"tara": 8000, "motorista": "GUILHERME NOBREGA"}, "BTR9B45": {"tara": 17000, "motorista": "JAIR (CAIO)"}, "DIL6624": {"tara": 11000, "motorista": "LEANDRO"}, "GXS9C71": {"tara": 11200, "motorista": "LINO"}, "CVD6E90": {"tara": 13400, "motorista": "MARCIO FRETE"}, "BNB9G51": {"tara": 13400, "motorista": "MARCIO FRETE (LINGUIÇA)"}, "EGT1F53": {"tara": 12500, "motorista": "MARCIO RAMIRO"}, "FOC6B31": {"tara": 16400, "motorista": "PAI DO GABRIEL (ANTONIO)"}, "CLK1369": {"tara": 9100, "motorista": "PASQUALE"}, "GLG6420": {"tara": 17200, "motorista": "PEPO CARRETA"}, "ELW6443": {"tara": 17800, "motorista": "PEPO CARRETA"}, "CLK0J02": {"tara": 17300, "motorista": "PEPO CARRETA"}, "CPJ8F49": {"tara": 17000, "motorista": "PEPO CARRETA"}, "HOA1J74": {"tara": 11500, "motorista": "PEPO TRUCK"}, "DTA3094": {"tara": 9000, "motorista": "RATO (LINO)"}, "CHR2H80": {"tara": 8700, "motorista": "ROBSON"}, "KPE5A19": {"tara": 13000, "motorista": "RODRIGO TADEU"}, "CCT5G38": {"tara": 8600, "motorista": "THIAGO FRETADO"}, "BWA1F44": {"tara": 8000, "motorista": "THIAGO FRETADO 2"}, "DIC0I12": {"tara": 9200, "motorista": "TRADIÇÃO"}, "EFU6091": {"tara": 11200, "motorista": "WANDER"}, "CGS0E97": {"tara": 11200, "motorista": "WANDER"}, "GSB9C25": {"tara": 10000, "motorista": "FABIANO (JACARÉ)"}, "ANN0H43": {"tara": 11000, "motorista": "RAFAEL (BRUNO)"}, "EYD8D69": {"tara": 9270, "motorista": "RAFAEL (MARIO)"}, "BUS2G53": {"tara": 10000, "motorista": "RAFAEL (MONCAIO)"}, "ELP1C24": {"tara": 8900, "motorista": "RAFAEL (THIAGO)"}, "CXA6C28": {"tara": 8100, "motorista": "RAFAEL (VINÍCIUS)"}, "NWC3F59": {"tara": 9500, "motorista": "RAFAEL (LEONARDO)"}, "ANF2H12": {"tara": 13000, "motorista": "FABIO JUNHO"}, "SUM3I13": {"tara": 12000, "motorista": "RODRIGUINHO FRET"}, "CXC5B83": {"tara": 10000, "motorista": "SAULO"}, "JBR2F09": {"tara": 11000, "motorista": "SAULO"}, "DPC2J00": {"tara": 10000, "motorista": "SAULO"}, "JVR3J09": {"tara": 12000, "motorista": "SAULO"}, "ENG1B12": {"tara": 11900, "motorista": "SAULO"}, "MQA5E32": {"tara": 11000, "motorista": "LUIS"}, "ETC0C23": {"tara": 11000, "motorista": "LUIS"}, "DPB3B26": {"tara": 11700, "motorista": "ASSUEIRO"}, "EFU7H34": {"tara": 12200, "motorista": "ASSUEIRO"}, "BXF5E04": {"tara": 12200, "motorista": "MARCIO FRETE"}, "GZH2E91": {"tara": 11800, "motorista": "MARCIO FRETE"}};
+
 function loadPlates() {
-  try { plates = JSON.parse(localStorage.getItem('pf_plates') || '{}'); } catch { plates = {}; }
+  // Começa com dados da planilha oficial
+  plates = Object.assign({}, PLACAS_BASE);
+  // Mescla com customizações locais (se houver)
+  try {
+    const local = JSON.parse(localStorage.getItem('pf_plates') || '{}');
+    Object.assign(plates, local);
+  } catch { }
+  // Popular tabela visual
+  const tbody = document.getElementById('plate-body');
+  tbody.innerHTML = '';
+  Object.entries(plates).forEach(([pl, info]) => {
+    const tara = typeof info === 'object' ? info.tara : info;
+    const mot  = typeof info === 'object' ? (info.motorista || '') : '';
+    addPlateRow(pl, tara, mot);
+  });
+  return;
   const tbody = document.getElementById('plate-body');
   tbody.innerHTML = '';
   const entries = Object.entries(plates);
@@ -300,11 +323,12 @@ function loadPlates() {
   entries.forEach(([pl, ta]) => addPlateRow(pl, ta));
 }
 
-function addPlateRow(plate='', tara='') {
+function addPlateRow(plate='', tara='', motorista='') {
   const tr = document.createElement('tr');
   tr.innerHTML = `
     <td><input type="text" value="${plate}" placeholder="ABC1D23" oninput="savePlates()"></td>
     <td><input type="number" value="${tara}" placeholder="11000" oninput="savePlates()"></td>
+    <td><input type="text" value="${motorista}" placeholder="Motorista" oninput="savePlates()" style="font-family:'Barlow',sans-serif;font-size:12px"></td>
     <td><button onclick="this.closest('tr').remove();savePlates()" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:18px;padding:2px 8px">×</button></td>
   `;
   document.getElementById('plate-body').appendChild(tr);
@@ -558,7 +582,7 @@ function refreshCalc(id) {
 
   const pl    = (document.getElementById(`f-placa-${id}`)?.value || '').toUpperCase().replace(/[^A-Z0-9]/g,'');
   const ca    = parseInt(document.getElementById(`f-carga-${id}`)?.value) || 0;
-  const ta    = plates[pl];
+  const _raw  = plates[pl]; const ta = _raw ? (typeof _raw === 'object' ? _raw.tara : _raw) : undefined;
   const boxEl = document.getElementById(`box-tara-${id}`);
   const taEl  = document.getElementById(`val-tara-${id}`);
   const brEl  = document.getElementById(`val-bruto-${id}`);
@@ -640,7 +664,7 @@ function buildPDF(note) {
   const carga = d.peso_carga_kg || 0;
   const placa = (d.placa || '').toUpperCase().replace(/[^A-Z0-9]/g,'') || '—';
   const mat   = (d.material || '—').toUpperCase();
-  const tara  = plates[placa] || 0;
+  const _pinfo = plates[placa]; const tara = _pinfo ? (typeof _pinfo === 'object' ? _pinfo.tara : _pinfo) : 0;
   const bruto = carga + tara;
   const dataFmt = dataV ? fmtDate(dataV) : '—';
 
