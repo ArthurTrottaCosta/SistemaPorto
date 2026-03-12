@@ -3,18 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>Porto Fortaleza – Gerador de Ticket</title>
+<title>Gerador de Ticket</title>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
 <style>
 :root {
-  --orange:    #2E7D32;
-  --orange-dk: #1B5E20;
-  --orange-lt: #E8F5E9;
-  --blue:      #2E7D32;
-  --blue-lt:   #E8F5E9;
-  --green:     #2E7D32;
-  --green-lt:  #E8F5E9;
-  --green-mid: #43A047;
+  --primary:   #1B5E20;
+  --primary-m: #2E7D32;
+  --primary-l: #E8F5E9;
+  --accent:    #43A047;
   --red:       #C0392B;
   --red-lt:    #FDECEA;
   --bg:        #F4F5F2;
@@ -31,136 +27,134 @@
 * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
 body { background:var(--bg); color:var(--gray1); font-family:'Barlow',sans-serif; font-size:15px; min-height:100vh; }
 
-/* HEADER */
-.header { background:#1B5E20; position:sticky; top:0; z-index:200; box-shadow:0 3px 16px rgba(0,0,0,.30); }
+/* ── HEADER ── */
+.header { background:var(--primary); position:sticky; top:0; z-index:200; box-shadow:0 3px 16px rgba(0,0,0,.30); }
 .header-inner { display:flex; align-items:stretch; max-width:640px; margin:0 auto; }
-.pf-logo { background:#fff; display:flex; align-items:center; justify-content:center; padding:8px 14px; }
-.pf-logo img { height:52px; width:auto; display:block; }
-.header-text  { padding:12px 16px; display:flex; flex-direction:column; justify-content:center; }
-.header-text h1 { font-family:'Barlow Condensed',sans-serif; font-weight:800; font-size:20px; color:#fff; letter-spacing:.5px; line-height:1; }
-.header-text p  { font-size:11px; color:rgba(255,255,255,.55); letter-spacing:1.5px; text-transform:uppercase; margin-top:3px; }
+.hdr-logo { background:#fff; display:flex; align-items:center; justify-content:center; padding:8px 14px; min-width:90px; }
+.hdr-logo img { height:52px; width:auto; display:block; }
+.hdr-text  { padding:12px 16px; display:flex; flex-direction:column; justify-content:center; flex:1; }
+.hdr-text h1 { font-family:'Barlow Condensed',sans-serif; font-weight:800; font-size:20px; color:#fff; letter-spacing:.5px; line-height:1; }
+.hdr-text p  { font-size:11px; color:rgba(255,255,255,.55); letter-spacing:1.5px; text-transform:uppercase; margin-top:3px; }
 
-/* MAIN */
+/* ── SWITCH EMPRESA ── */
+.empresa-switch { display:flex; background:rgba(255,255,255,.12); border-radius:8px; padding:3px; gap:2px; margin:8px 14px 8px 0; }
+.empresa-btn { flex:1; padding:5px 10px; border:none; border-radius:6px; font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:12px; letter-spacing:.5px; cursor:pointer; transition:all .2s; color:rgba(255,255,255,.65); background:transparent; white-space:nowrap; }
+.empresa-btn.active { background:#fff; color:var(--primary); }
+
+/* ── MAIN ── */
 main { max-width:640px; margin:0 auto; padding:20px 14px 60px; }
 
-/* SECTION HEADER */
+/* ── SECTION HEAD ── */
 .sec-head { display:flex; align-items:center; gap:12px; margin-bottom:14px; }
-.sec-icon { width:40px; height:40px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
-.sec-icon.orange { background:var(--orange-lt); }
-.sec-icon.blue   { background:#E8F5E9; }
+.sec-icon { width:40px; height:40px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; background:var(--primary-l); }
 .sec-head-text h2 { font-family:'Barlow Condensed',sans-serif; font-weight:800; font-size:20px; color:var(--gray1); }
 .sec-head-text p  { font-size:12px; color:var(--gray3); margin-top:1px; }
 
-/* CARD */
+/* ── CARD ── */
 .card { background:var(--white); border-radius:var(--radius); box-shadow:var(--shadow); margin-bottom:14px; overflow:hidden; }
-.card-head { padding:10px 16px; display:flex; align-items:center; gap:8px; }
+.card-head { padding:10px 16px; display:flex; align-items:center; gap:8px; background:var(--primary-m); }
 .card-head h3 { font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:15px; letter-spacing:1px; text-transform:uppercase; color:#fff; }
 .card-head .icon { font-size:16px; }
-.card-head.orange { background:var(--orange); }
-.card-head.blue   { background:var(--blue); }
-.card-head.green  { background:#2E7D32; }
-.card-head.gray   { background:var(--gray2); }
 .card-body { padding:16px; }
 
-/* UPLOAD ZONE */
+/* ── UPLOAD ── */
 .upload-zone { border:2.5px dashed var(--gray4); border-radius:10px; padding:32px 20px; text-align:center; cursor:pointer; transition:all .2s; position:relative; background:var(--bg); }
-.upload-zone:hover, .upload-zone.dragover { border-color:var(--orange); background:var(--orange-lt); }
+.upload-zone:hover, .upload-zone.dragover { border-color:var(--primary-m); background:var(--primary-l); }
 .upload-zone input[type=file] { position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%; }
 .upload-icon-big { font-size:44px; margin-bottom:8px; display:block; }
 .upload-zone h3 { font-family:'Barlow Condensed',sans-serif; font-weight:800; font-size:22px; color:var(--gray2); margin-bottom:4px; }
 .upload-zone p  { font-size:13px; color:var(--gray3); }
-.upload-badge { display:inline-block; margin-top:10px; padding:5px 16px; background:var(--orange); color:#fff; border-radius:20px; font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:13px; letter-spacing:1px; }
+.upload-badge { display:inline-block; margin-top:10px; padding:5px 16px; background:var(--primary-m); color:#fff; border-radius:20px; font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:13px; letter-spacing:1px; }
 .upload-hint { font-size:12px; color:var(--gray3); text-align:center; margin-top:8px; }
 
-/* PLATES TABLE */
-.hint-text { font-size:12px; color:var(--gray3); margin-bottom:10px; line-height:1.5; }
-.tbl { width:100%; border-collapse:collapse; font-size:14px; }
-.tbl th { background:var(--bg); padding:8px 10px; text-align:left; font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:12px; text-transform:uppercase; letter-spacing:1px; color:var(--gray3); border-bottom:2px solid var(--gray5); }
-.tbl td { padding:5px 8px; border-bottom:1px solid var(--gray5); }
+/* ── TABELA CAMINHÕES ── */
+.tbl { width:100%; border-collapse:collapse; font-size:13px; }
+.tbl th { background:var(--bg); padding:7px 8px; text-align:left; font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:11px; text-transform:uppercase; letter-spacing:1px; color:var(--gray3); border-bottom:2px solid var(--gray5); }
+.tbl td { padding:4px 6px; border-bottom:1px solid var(--gray5); }
 .tbl tr:last-child td { border-bottom:none; }
-.tbl input { background:transparent; border:none; color:var(--gray1); font-family:'JetBrains Mono',monospace; font-size:13px; width:100%; outline:none; padding:4px; border-radius:4px; transition:background .15s; }
-.tbl input:focus { background:var(--orange-lt); }
+.tbl input { background:transparent; border:none; color:var(--gray1); font-family:'JetBrains Mono',monospace; font-size:12px; width:100%; outline:none; padding:3px; border-radius:4px; transition:background .15s; }
+.tbl input:focus { background:var(--primary-l); }
 .tbl input[type=text] { text-transform:uppercase; }
-.btn-add { margin-top:10px; padding:8px 14px; background:transparent; border:2px solid var(--gray4); border-radius:8px; color:var(--gray3); font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:14px; letter-spacing:1px; cursor:pointer; transition:all .2s; display:flex; align-items:center; gap:6px; }
-.btn-add:hover { border-color:var(--orange); color:var(--orange); }
+.btn-add { margin-top:10px; padding:8px 14px; background:transparent; border:2px solid var(--gray4); border-radius:8px; color:var(--gray3); font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:14px; letter-spacing:1px; cursor:pointer; transition:all .2s; }
+.btn-add:hover { border-color:var(--primary-m); color:var(--primary-m); }
 
-/* QUEUE SUMMARY BAR */
-.queue-bar { background:#1B5E20; border-radius:10px; padding:12px 16px; display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; flex-wrap:wrap; gap:10px; }
+/* ── QUEUE BAR ── */
+.queue-bar { background:var(--primary); border-radius:10px; padding:12px 16px; display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; flex-wrap:wrap; gap:10px; }
 .queue-counts { display:flex; gap:16px; }
-.queue-count { display:flex; flex-direction:column; align-items:center; }
 .queue-count .n { font-family:'Barlow Condensed',sans-serif; font-weight:900; font-size:28px; color:#fff; line-height:1; }
 .queue-count .l { font-size:10px; color:rgba(255,255,255,.6); letter-spacing:1px; text-transform:uppercase; }
-.queue-count.orange .n { color:var(--orange); }
-.queue-count.green  .n { color:#4cd98a; }
-.queue-count.red    .n { color:#ff6b6b; }
-.btn-gen-all { padding:10px 20px; background:var(--green); color:#fff; border:none; border-radius:8px; font-family:'Barlow Condensed',sans-serif; font-weight:800; font-size:16px; letter-spacing:1px; cursor:pointer; transition:all .2s; white-space:nowrap; }
-.btn-gen-all:hover { background:#146b39; }
+.queue-count { display:flex; flex-direction:column; align-items:center; }
+.queue-count.grn .n { color:#4cd98a; }
+.queue-count.red .n { color:#ff6b6b; }
+.queue-count.yel .n { color:#ffd93d; }
+.btn-gen-all { padding:10px 20px; background:var(--accent); color:#fff; border:none; border-radius:8px; font-family:'Barlow Condensed',sans-serif; font-weight:800; font-size:16px; letter-spacing:1px; cursor:pointer; transition:all .2s; white-space:nowrap; }
+.btn-gen-all:hover { background:#2e7d32; }
 .btn-gen-all:disabled { background:var(--gray4); cursor:not-allowed; }
 
-/* NOTE CARD */
+/* ── NOTE CARD ── */
 .note-card { background:var(--white); border-radius:var(--radius); box-shadow:var(--shadow); margin-bottom:14px; overflow:hidden; transition:all .3s; }
-.note-card.processing { border:2px solid var(--blue); }
-.note-card.ready      { border:2px solid var(--green); }
+.note-card.processing { border:2px solid var(--accent); }
+.note-card.ready      { border:2px solid var(--primary-m); }
 .note-card.error-card { border:2px solid var(--red); }
 .note-card.done-card  { border:2px solid var(--gray4); opacity:.7; }
-
 .note-head { padding:10px 14px; display:flex; align-items:center; gap:10px; cursor:pointer; user-select:none; }
-.note-head.processing { background:#E8F5E9; }
-.note-head.ready      { background:var(--green-lt); }
+.note-head.processing { background:#F1F8E9; }
+.note-head.ready      { background:var(--primary-l); }
 .note-head.error-c    { background:var(--red-lt); }
 .note-head.done-c     { background:var(--gray5); }
-
 .note-status-icon { font-size:22px; flex-shrink:0; }
 .note-info { flex:1; min-width:0; }
 .note-filename { font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:15px; color:var(--gray1); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .note-subtitle { font-size:11px; color:var(--gray3); margin-top:1px; }
 .note-arrow { font-size:12px; color:var(--gray3); transition:transform .2s; flex-shrink:0; }
 .note-arrow.open { transform:rotate(180deg); }
-
 .note-body { border-top:1px solid var(--gray5); display:none; }
 .note-body.open { display:block; }
 .note-body-inner { padding:14px; }
 
-/* SPINNER INLINE */
-.spin-sm { display:inline-block; width:18px; height:18px; border:2px solid rgba(0,0,0,.1); border-top-color:#2E7D32; border-radius:50%; animation:spin .7s linear infinite; vertical-align:middle; }
+/* ── SPINNER ── */
+.spin-sm { display:inline-block; width:18px; height:18px; border:2px solid rgba(0,0,0,.1); border-top-color:var(--primary-m); border-radius:50%; animation:spin .7s linear infinite; vertical-align:middle; }
 @keyframes spin { to { transform:rotate(360deg); } }
 
-/* FIELDS */
+/* ── FIELDS ── */
 .field-group { display:flex; flex-direction:column; gap:8px; }
 .field { background:var(--bg); border:2px solid var(--gray5); border-radius:10px; padding:9px 12px; transition:border-color .2s; }
-.field:focus-within { border-color:var(--orange); background:var(--orange-lt); }
+.field:focus-within { border-color:var(--primary-m); background:var(--primary-l); }
 .field label { font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--gray3); display:block; margin-bottom:3px; }
 .field input { background:transparent; border:none; color:var(--gray1); font-family:'JetBrains Mono',monospace; font-size:15px; font-weight:700; width:100%; outline:none; }
 .field input[type=text] { text-transform:uppercase; }
 .row2 { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
-.row3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; }
 
-/* CALC STRIP */
+/* ── CALC STRIP ── */
 .calc-strip { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:8px; }
 .calc-box { border-radius:10px; padding:10px 12px; }
-.calc-box.tara  { background:var(--blue-lt);  border:2px solid #c8d8ef; }
-.calc-box.bruto { background:var(--orange-lt); border:2px solid #c8e6c9; }
-.calc-box.warn  { background:var(--red-lt);   border:2px solid #ffcdd2; }
-.calc-box .lbl  { font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:10px; letter-spacing:2px; text-transform:uppercase; }
-.calc-box.tara  .lbl { color:var(--blue); }
-.calc-box.bruto .lbl { color:var(--orange-dk); }
+.calc-box.tara  { background:var(--primary-l); border:2px solid #a5d6a7; }
+.calc-box.bruto { background:#E8F5E9; border:2px solid #c8e6c9; }
+.calc-box.warn  { background:var(--red-lt); border:2px solid #ffcdd2; }
+.calc-box .lbl  { font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--primary-m); }
 .calc-box.warn  .lbl { color:var(--red); }
 .calc-box .val  { font-family:'JetBrains Mono',monospace; font-weight:700; font-size:16px; color:var(--gray1); margin-top:3px; }
 
-/* ACTIONS ROW */
+/* ── INFO PILL (motorista / rodizio) ── */
+.info-pills { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:6px; }
+.info-pill { background:var(--bg); border-radius:8px; padding:8px 12px; }
+.info-pill .lbl { font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--gray3); }
+.info-pill .val { font-weight:600; font-size:13px; margin-top:2px; }
+
+/* ── ACTIONS ── */
 .note-actions { display:flex; gap:8px; margin-top:12px; }
-.btn-ticket { flex:1; padding:13px; background:var(--green); color:#fff; border:none; border-radius:9px; font-family:'Barlow Condensed',sans-serif; font-weight:800; font-size:17px; letter-spacing:1px; cursor:pointer; transition:all .2s; }
-.btn-ticket:hover { background:#146b39; }
+.btn-ticket { flex:1; padding:13px; background:var(--primary-m); color:#fff; border:none; border-radius:9px; font-family:'Barlow Condensed',sans-serif; font-weight:800; font-size:17px; letter-spacing:1px; cursor:pointer; transition:all .2s; }
+.btn-ticket:hover { background:var(--primary); }
 .btn-ticket:disabled { background:var(--gray4); cursor:not-allowed; }
 .btn-ticket.done-btn { background:var(--gray4); color:var(--gray2); }
 .btn-remove { padding:13px 14px; background:transparent; border:2px solid var(--gray4); border-radius:9px; color:var(--gray3); font-size:18px; cursor:pointer; transition:all .2s; line-height:1; }
 .btn-remove:hover { border-color:var(--red); color:var(--red); }
 
-/* PROGRESS BAR */
+/* ── PROGRESS ── */
 .progress-wrap { background:var(--gray5); border-radius:99px; height:6px; margin-bottom:14px; overflow:hidden; }
-.progress-fill { height:100%; background:linear-gradient(90deg, #43A047, #1B5E20); border-radius:99px; transition:width .4s ease; }
+.progress-fill { height:100%; background:linear-gradient(90deg, var(--accent), var(--primary)); border-radius:99px; transition:width .4s ease; }
 
-/* EMPTY STATE */
+/* ── EMPTY STATE ── */
 .empty-state { text-align:center; padding:40px 20px; color:var(--gray3); }
 .empty-state .e-icon { font-size:48px; margin-bottom:12px; display:block; }
 .empty-state p { font-size:14px; }
@@ -170,30 +164,55 @@ main { max-width:640px; margin:0 auto; padding:20px 14px 60px; }
 
 <div class="header">
   <div class="header-inner">
-    <div class="pf-logo">
-      <img src="logo.png" alt="Porto Fortaleza">
+    <div class="hdr-logo">
+      <img src="logo.png" alt="Empresa" id="hdr-logo-img">
     </div>
-    <div class="header-text">
-      <h1>Porto Fortaleza</h1>
+    <div class="hdr-text">
+      <h1 id="hdr-nome">Porto Fortaleza</h1>
       <p>Gerador Automático de Ticket</p>
+    </div>
+    <div class="empresa-switch">
+      <button class="empresa-btn active" id="btn-pf" onclick="setEmpresa('PF')">Porto Fortaleza</button>
+      <button class="empresa-btn"        id="btn-cr" onclick="setEmpresa('CR')">CR Ambiental</button>
     </div>
   </div>
 </div>
 
 <main>
 
-
+  <!-- ══ CAMINHÕES ══ -->
+  <div class="sec-head">
+    <div class="sec-icon">🚛</div>
+    <div class="sec-head-text">
+      <h2>Caminhões Cadastrados</h2>
+      <p>Digite a placa na NF — tara e motorista preenchem automaticamente</p>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-head" style="cursor:pointer" onclick="toggleTrucks()">
+      <span class="icon">📋</span>
+      <h3>Placa × Tara × Motorista</h3>
+      <span id="truck-arrow" style="margin-left:auto;color:rgba(255,255,255,.6);font-size:13px">▼</span>
+    </div>
+    <div class="card-body" id="truck-body">
+      <table class="tbl">
+        <thead><tr><th>Placa</th><th>Tara (KG)</th><th>Motorista</th><th style="width:32px"></th></tr></thead>
+        <tbody id="plate-body"></tbody>
+      </table>
+      <button class="btn-add" onclick="addPlateRow()">＋ Adicionar caminhão</button>
+    </div>
+  </div>
 
   <!-- ══ UPLOAD ══ -->
-  <div class="sec-head" style="margin-top:10px">
-    <div class="sec-icon orange">📄</div>
+  <div class="sec-head">
+    <div class="sec-icon">📄</div>
     <div class="sec-head-text">
       <h2>Notas Fiscais em PDF</h2>
       <p>Selecione uma ou várias notas de uma vez</p>
     </div>
   </div>
   <div class="card">
-    <div class="card-head orange"><span class="icon">⬆️</span><h3>Upload das Notas Fiscais</h3></div>
+    <div class="card-head"><span class="icon">⬆️</span><h3>Upload das Notas Fiscais</h3></div>
     <div class="card-body">
       <div class="upload-zone" id="upload-zone">
         <input type="file" accept=".pdf" multiple id="file-input" onchange="handleFiles(this.files)">
@@ -208,56 +227,112 @@ main { max-width:640px; margin:0 auto; padding:20px 14px 60px; }
 
   <!-- ══ FILA ══ -->
   <div id="queue-section" style="display:none">
-
     <div class="queue-bar" id="queue-bar">
       <div class="queue-counts">
         <div class="queue-count"><span class="n" id="qc-total">0</span><span class="l">Total</span></div>
-        <div class="queue-count orange"><span class="n" id="qc-proc">0</span><span class="l">Processando</span></div>
-        <div class="queue-count green"><span class="n" id="qc-ready">0</span><span class="l">Prontas</span></div>
+        <div class="queue-count yel"><span class="n" id="qc-proc">0</span><span class="l">Processando</span></div>
+        <div class="queue-count grn"><span class="n" id="qc-ready">0</span><span class="l">Prontas</span></div>
         <div class="queue-count red"><span class="n" id="qc-err">0</span><span class="l">Erro</span></div>
       </div>
-      <button class="btn-gen-all" id="btn-gen-all" onclick="generateAll()" disabled>
-        🖨 GERAR TODOS
-      </button>
+      <button class="btn-gen-all" id="btn-gen-all" onclick="generateAll()" disabled>🖨 GERAR TODOS</button>
     </div>
-
     <div class="progress-wrap" id="progress-wrap" style="display:none">
       <div class="progress-fill" id="progress-fill" style="width:0%"></div>
     </div>
-
     <div id="note-list">
-      <div class="empty-state">
-        <span class="e-icon">📭</span>
-        <p>Selecione os PDFs acima para começar</p>
-      </div>
+      <div class="empty-state"><span class="e-icon">📭</span><p>Selecione os PDFs acima para começar</p></div>
     </div>
-
   </div>
 
 </main>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
-// ══════════════════════════════════
-// STATE
-// ══════════════════════════════════
-let plates = {};
-let notes  = []; // array of note objects
-let noteId = 0;
-let trucksOpen = true;
+// ═══════════════════════════════════════
+// EMPRESA  (PF = Porto Fortaleza | CR = CR Ambiental)
+// ═══════════════════════════════════════
+const EMPRESAS = {
+  PF: {
+    nome:     'Porto Fortaleza',
+    subNome:  'PORTO FORTALEZA AREIA E PEDRA',
+    endereco: 'AV. PEDRO DE SOUZA LOPES N4199',
+    rodape:   'EXTRAÇÃO DE AREIA',
+    logo:     'logo.png',
+    cor:      [27, 94, 32],
+    corMid:   [46, 125, 50],
+  },
+  CR: {
+    nome:     'CR Ambiental',
+    subNome:  'CR AMBIENTAL AREIA E PEDRA',
+    endereco: '',
+    rodape:   'CR AMBIENTAL',
+    logo:     'logo_cr.png',
+    cor:      [27, 94, 32],
+    corMid:   [46, 125, 50],
+  },
+};
 
-// ══════════════════════════════════
-// TRUCKS
-// ══════════════════════════════════
+let empresa = 'PF';
+
+function setEmpresa(e) {
+  empresa = e;
+  const emp = EMPRESAS[e];
+  document.getElementById('hdr-logo-img').src = emp.logo;
+  document.getElementById('hdr-nome').textContent = emp.nome;
+  document.getElementById('btn-pf').classList.toggle('active', e === 'PF');
+  document.getElementById('btn-cr').classList.toggle('active', e === 'CR');
+}
+
+// ═══════════════════════════════════════
+// PLACAS
+// ═══════════════════════════════════════
+let plates = {};
+let notes  = [];
+let noteId = 0;
+let trucksOpen = false;
+
+const PLACAS_BASE = {"EZZ7J49": {"tara": 11420, "motorista": "JOSE EDMILSON", "rodizio": "SEXTA"}, "GEC2D25": {"tara": 10600, "motorista": "SEVERINO (BIU)", "rodizio": "QUARTA"}, "STR7J73": {"tara": 9550, "motorista": "THIAGO", "rodizio": "SEGUNDA"}, "FCQ0152": {"tara": 9600, "motorista": "ANDERSON", "rodizio": "QUARTA"}, "TIV6G18": {"tara": 9600, "motorista": "HAMILTON", "rodizio": "QUINTA"}, "TLL2G96": {"tara": 9500, "motorista": "GLEIDSON", "rodizio": "TERÇA"}, "TIU4E58": {"tara": 9600, "motorista": "JONATHAN", "rodizio": "QUINTA"}, "FPB7C07": {"tara": 9600, "motorista": "NIVALDO", "rodizio": "QUINTA"}, "FXU8A25": {"tara": 9400, "motorista": "RENATO", "rodizio": "QUARTA"}, "FIK1H91": {"tara": 9550, "motorista": "", "rodizio": "SEGUNDA"}, "TIP8E27": {"tara": 10000, "motorista": "CARLOS", "rodizio": "TERÇA"}, "DZF7590": {"tara": 10000, "motorista": "BOLSA", "rodizio": "FRETADO"}, "BXH7A70": {"tara": 9800, "motorista": "CARLINHOS", "rodizio": "FRETADO"}, "BXB6894": {"tara": 10200, "motorista": "CARNEIRO", "rodizio": "FRETADO"}, "GUD6E90": {"tara": 9500, "motorista": "COELHO", "rodizio": "FRETADO"}, "BXC8I45": {"tara": 10200, "motorista": "DIGÃO", "rodizio": "FRETADO"}, "CYY7I36": {"tara": 8500, "motorista": "DIGÃO (GUSTAVO)", "rodizio": "FRETADO"}, "GSV9C25": {"tara": 11000, "motorista": "FABIANO", "rodizio": "FRETADO"}, "NGL0I99": {"tara": 9400, "motorista": "GABRIEL", "rodizio": "FRETADO"}, "DQG0H87": {"tara": 10000, "motorista": "GUGA", "rodizio": "FRETADO"}, "CYR8B37": {"tara": 8000, "motorista": "GUILHERME NOBREGA", "rodizio": "FRETADO"}, "BTR9B45": {"tara": 17000, "motorista": "JAIR (CAIO)", "rodizio": "FRETADO"}, "DIL6624": {"tara": 11000, "motorista": "LEANDRO", "rodizio": "FRETADO"}, "GXS9C71": {"tara": 11200, "motorista": "LINO", "rodizio": "FRETADO"}, "CVD6E90": {"tara": 13400, "motorista": "MARCIO FRETE", "rodizio": "FRETADO"}, "BNB9G51": {"tara": 13400, "motorista": "MARCIO FRETE (LINGUIÇA)", "rodizio": "FRETADO"}, "EGT1F53": {"tara": 12500, "motorista": "MARCIO RAMIRO", "rodizio": "FRETADO"}, "FOC6B31": {"tara": 16400, "motorista": "PAI DO GABRIEL (ANTONIO)", "rodizio": "FRETADO"}, "CLK1369": {"tara": 9100, "motorista": "PASQUALE", "rodizio": "FRETADO"}, "GLG6420": {"tara": 17200, "motorista": "PEPO CARRETA", "rodizio": "FRETADO"}, "ELW6443": {"tara": 17800, "motorista": "PEPO CARRETA", "rodizio": "FRETADO"}, "CLK0J02": {"tara": 17300, "motorista": "PEPO CARRETA", "rodizio": "FRETADO"}, "CPJ8F49": {"tara": 17000, "motorista": "PEPO CARRETA", "rodizio": "FRETADO"}, "HOA1J74": {"tara": 11500, "motorista": "PEPO TRUCK", "rodizio": "FRETADO"}, "DTA3094": {"tara": 9000, "motorista": "RATO (LINO)", "rodizio": "FRETADO"}, "CHR2H80": {"tara": 8700, "motorista": "ROBSON", "rodizio": "FRETADO"}, "KPE5A19": {"tara": 13000, "motorista": "RODRIGO TADEU", "rodizio": "FRETADO"}, "CCT5G38": {"tara": 8600, "motorista": "THIAGO FRETADO", "rodizio": "FRETADO"}, "BWA1F44": {"tara": 8000, "motorista": "THIAGO FRETADO 2", "rodizio": "FRETADO"}, "DIC0I12": {"tara": 9200, "motorista": "TRADIÇÃO", "rodizio": "FRETADO"}, "EFU6091": {"tara": 11200, "motorista": "WANDER", "rodizio": "FRETADO"}, "CGS0E97": {"tara": 11200, "motorista": "WANDER", "rodizio": "FRETADO"}, "GSB9C25": {"tara": 10000, "motorista": "FABIANO (JACARÉ)", "rodizio": "SEXTA"}, "ANN0H43": {"tara": 11000, "motorista": "RAFAEL (BRUNO)", "rodizio": "TERÇA"}, "EYD8D69": {"tara": 9270, "motorista": "RAFAEL (MARIO)", "rodizio": "SEXTA"}, "BUS2G53": {"tara": 10000, "motorista": "RAFAEL (MONCAIO)", "rodizio": "QUARTA"}, "ELP1C24": {"tara": 8900, "motorista": "RAFAEL (THIAGO)", "rodizio": "TERÇA"}, "CXA6C28": {"tara": 8100, "motorista": "RAFAEL (VINÍCIUS)", "rodizio": "QUINTA"}, "NWC3F59": {"tara": 9500, "motorista": "RAFAEL (LEONARDO)", "rodizio": "SEXTA"}, "ANF2H12": {"tara": 13000, "motorista": "FABIO JUNHO", "rodizio": "SEGUNDA"}, "SUM3I13": {"tara": 12000, "motorista": "RODRIGUINHO FRET", "rodizio": "TERÇA"}, "CXC5B83": {"tara": 10000, "motorista": "SAULO", "rodizio": "TERÇA"}, "JBR2F09": {"tara": 11000, "motorista": "SAULO", "rodizio": "SEXTA"}, "DPC2J00": {"tara": 10000, "motorista": "SAULO", "rodizio": ""}, "JVR3J09": {"tara": 12000, "motorista": "SAULO", "rodizio": ""}, "ENG1B12": {"tara": 11900, "motorista": "SAULO", "rodizio": ""}, "MQA5E32": {"tara": 11000, "motorista": "LUIS", "rodizio": ""}, "ETC0C23": {"tara": 11000, "motorista": "LUIS", "rodizio": ""}, "DPB3B26": {"tara": 11700, "motorista": "ASSUEIRO", "rodizio": ""}, "EFU7H34": {"tara": 12200, "motorista": "ASSUEIRO", "rodizio": ""}, "BXF5E04": {"tara": 12200, "motorista": "MARCIO FRETE", "rodizio": ""}, "GZH2E91": {"tara": 11800, "motorista": "MARCIO FRETE", "rodizio": ""}};
+
 function toggleTrucks() {
   trucksOpen = !trucksOpen;
-  document.getElementById('truck-body').style.display  = trucksOpen ? '' : 'none';
-  document.getElementById('truck-arrow').textContent = trucksOpen ? '▼' : '▶';
+  document.getElementById('truck-body').style.display = trucksOpen ? '' : 'none';
+  document.getElementById('truck-arrow').textContent  = trucksOpen ? '▼' : '▶';
+}
+
+function loadPlates() {
+  plates = Object.assign({}, PLACAS_BASE);
+  try {
+    const local = JSON.parse(localStorage.getItem('pf_plates') || '{}');
+    Object.assign(plates, local);
+  } catch {}
+  renderPlateTable();
+}
+
+function renderPlateTable() {
+  const tbody = document.getElementById('plate-body');
+  tbody.innerHTML = '';
+  Object.entries(plates).forEach(([pl, info]) => {
+    const tara = typeof info === 'object' ? info.tara      : info;
+    const mot  = typeof info === 'object' ? (info.motorista||'') : '';
+    const rod  = typeof info === 'object' ? (info.rodizio||'')   : '';
+    addPlateRow(pl, tara, mot, rod);
+  });
+}
+
+function addPlateRow(plate='', tara='', motorista='', rodizio='') {
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td><input type="text" value="${plate}" placeholder="ABC1D23" oninput="savePlates()"></td>
+    <td><input type="number" value="${tara}" placeholder="10000" oninput="savePlates()"></td>
+    <td><input type="text" value="${motorista}" placeholder="Nome" oninput="savePlates()" style="text-transform:none"></td>
+    <td><button onclick="this.closest('tr').remove();savePlates()" style="background:none;border:none;color:#C0392B;cursor:pointer;font-size:18px;padding:2px 6px">×</button></td>
+  `;
+  document.getElementById('plate-body').appendChild(tr);
+  // Abrir tabela automaticamente ao adicionar
+  if (!trucksOpen) { trucksOpen = true; document.getElementById('truck-body').style.display = ''; document.getElementById('truck-arrow').textContent = '▼'; }
 }
 
 function savePlates() {
-  plates = Object.assign({}, PLACAS_BASE); // mantém base
-  // sobrescreve com edições locais
   const local = {};
   document.querySelectorAll('#plate-body tr').forEach(r => {
     const inp = r.querySelectorAll('input');
@@ -265,97 +340,56 @@ function savePlates() {
     const ta  = parseInt(inp[1].value) || 0;
     const mot = inp[2] ? inp[2].value.trim() : '';
     if (pl) {
-      plates[pl] = { tara: ta, motorista: mot };
-      local[pl]  = { tara: ta, motorista: mot };
+      const info = PLACAS_BASE[pl] || {};
+      plates[pl] = { tara: ta, motorista: mot, rodizio: info.rodizio || '' };
+      if (!PLACAS_BASE[pl]) local[pl] = plates[pl];
     }
   });
-  try { localStorage.setItem('pf_plates', JSON.stringify(local)); } catch(e) {}
+  try { localStorage.setItem('pf_plates', JSON.stringify(local)); } catch {}
   notes.forEach(n => { if (n.data?.placa) refreshCalc(n.id); });
 }
 
-// Dados base das placas (vêm da planilha oficial)
-const PLACAS_BASE = {"EZZ7J49": {"tara": 11420, "motorista": "JOSE EDMILSON", "rodizio": "SEXTA"}, "GEC2D25": {"tara": 10600, "motorista": "SEVERINO (BIU)", "rodizio": "QUARTA"}, "STR7J73": {"tara": 9550, "motorista": "THIAGO", "rodizio": "SEGUNDA"}, "FCQ0152": {"tara": 9600, "motorista": "ANDERSON", "rodizio": "QUARTA"}, "TIV6G18": {"tara": 9600, "motorista": "HAMILTON", "rodizio": "QUINTA"}, "TLL2G96": {"tara": 9500, "motorista": "GLEIDSON", "rodizio": "TERÇA"}, "TIU4E58": {"tara": 9600, "motorista": "JONATHAN", "rodizio": "QUINTA"}, "FPB7C07": {"tara": 9600, "motorista": "NIVALDO", "rodizio": "QUINTA"}, "FXU8A25": {"tara": 9400, "motorista": "RENATO", "rodizio": "QUARTA"}, "FIK1H91": {"tara": 9550, "motorista": "", "rodizio": "SEGUNDA"}, "TIP8E27": {"tara": 10000, "motorista": "CARLOS", "rodizio": "TERÇA"}, "DZF7590": {"tara": 10000, "motorista": "BOLSA", "rodizio": "FRETADO"}, "BXH7A70": {"tara": 9800, "motorista": "CARLINHOS", "rodizio": "FRETADO"}, "BXB6894": {"tara": 10200, "motorista": "CARNEIRO", "rodizio": "FRETADO"}, "GUD6E90": {"tara": 9500, "motorista": "COELHO", "rodizio": "FRETADO"}, "BXC8I45": {"tara": 10200, "motorista": "DIGÃO", "rodizio": "FRETADO"}, "CYY7I36": {"tara": 8500, "motorista": "DIGÃO (GUSTAVO)", "rodizio": "FRETADO"}, "GSV9C25": {"tara": 11000, "motorista": "FABIANO", "rodizio": "FRETADO"}, "NGL0I99": {"tara": 9400, "motorista": "GABRIEL", "rodizio": "FRETADO"}, "DQG0H87": {"tara": 10000, "motorista": "GUGA", "rodizio": "FRETADO"}, "CYR8B37": {"tara": 8000, "motorista": "GUILHERME NOBREGA", "rodizio": "FRETADO"}, "BTR9B45": {"tara": 17000, "motorista": "JAIR (CAIO)", "rodizio": "FRETADO"}, "DIL6624": {"tara": 11000, "motorista": "LEANDRO", "rodizio": "FRETADO"}, "GXS9C71": {"tara": 11200, "motorista": "LINO", "rodizio": "FRETADO"}, "CVD6E90": {"tara": 13400, "motorista": "MARCIO FRETE", "rodizio": "FRETADO"}, "BNB9G51": {"tara": 13400, "motorista": "MARCIO FRETE (LINGUIÇA)", "rodizio": "FRETADO"}, "EGT1F53": {"tara": 12500, "motorista": "MARCIO RAMIRO", "rodizio": "FRETADO"}, "FOC6B31": {"tara": 16400, "motorista": "PAI DO GABRIEL (ANTONIO)", "rodizio": "FRETADO"}, "CLK1369": {"tara": 9100, "motorista": "PASQUALE", "rodizio": "FRETADO"}, "GLG6420": {"tara": 17200, "motorista": "PEPO CARRETA", "rodizio": "FRETADO"}, "ELW6443": {"tara": 17800, "motorista": "PEPO CARRETA", "rodizio": "FRETADO"}, "CLK0J02": {"tara": 17300, "motorista": "PEPO CARRETA", "rodizio": "FRETADO"}, "CPJ8F49": {"tara": 17000, "motorista": "PEPO CARRETA", "rodizio": "FRETADO"}, "HOA1J74": {"tara": 11500, "motorista": "PEPO TRUCK", "rodizio": "FRETADO"}, "DTA3094": {"tara": 9000, "motorista": "RATO (LINO)", "rodizio": "FRETADO"}, "CHR2H80": {"tara": 8700, "motorista": "ROBSON", "rodizio": "FRETADO"}, "KPE5A19": {"tara": 13000, "motorista": "RODRIGO TADEU", "rodizio": "FRETADO"}, "CCT5G38": {"tara": 8600, "motorista": "THIAGO FRETADO", "rodizio": "FRETADO"}, "BWA1F44": {"tara": 8000, "motorista": "THIAGO FRETADO 2", "rodizio": "FRETADO"}, "DIC0I12": {"tara": 9200, "motorista": "TRADIÇÃO", "rodizio": "FRETADO"}, "EFU6091": {"tara": 11200, "motorista": "WANDER", "rodizio": "FRETADO"}, "CGS0E97": {"tara": 11200, "motorista": "WANDER", "rodizio": "FRETADO"}, "GSB9C25": {"tara": 10000, "motorista": "FABIANO (JACARÉ)", "rodizio": "SEXTA"}, "ANN0H43": {"tara": 11000, "motorista": "RAFAEL (BRUNO)", "rodizio": "TERÇA"}, "EYD8D69": {"tara": 9270, "motorista": "RAFAEL (MARIO)", "rodizio": "SEXTA"}, "BUS2G53": {"tara": 10000, "motorista": "RAFAEL (MONCAIO)", "rodizio": "QUARTA"}, "ELP1C24": {"tara": 8900, "motorista": "RAFAEL (THIAGO)", "rodizio": "TERÇA"}, "CXA6C28": {"tara": 8100, "motorista": "RAFAEL (VINÍCIUS)", "rodizio": "QUINTA"}, "NWC3F59": {"tara": 9500, "motorista": "RAFAEL (LEONARDO)", "rodizio": "SEXTA"}, "ANF2H12": {"tara": 13000, "motorista": "FABIO JUNHO", "rodizio": "SEGUNDA"}, "SUM3I13": {"tara": 12000, "motorista": "RODRIGUINHO FRET", "rodizio": "TERÇA"}, "CXC5B83": {"tara": 10000, "motorista": "SAULO", "rodizio": "TERÇA"}, "JBR2F09": {"tara": 11000, "motorista": "SAULO", "rodizio": "SEXTA"}, "DPC2J00": {"tara": 10000, "motorista": "SAULO", "rodizio": ""}, "JVR3J09": {"tara": 12000, "motorista": "SAULO", "rodizio": ""}, "ENG1B12": {"tara": 11900, "motorista": "SAULO", "rodizio": ""}, "MQA5E32": {"tara": 11000, "motorista": "LUIS", "rodizio": ""}, "ETC0C23": {"tara": 11000, "motorista": "LUIS", "rodizio": ""}, "DPB3B26": {"tara": 11700, "motorista": "ASSUEIRO", "rodizio": ""}, "EFU7H34": {"tara": 12200, "motorista": "ASSUEIRO", "rodizio": ""}, "BXF5E04": {"tara": 12200, "motorista": "MARCIO FRETE", "rodizio": ""}, "GZH2E91": {"tara": 11800, "motorista": "MARCIO FRETE", "rodizio": ""}};
-
-function loadPlates() {
-  // Começa com dados da planilha oficial
-  plates = Object.assign({}, PLACAS_BASE);
-  // Mescla com customizações locais (se houver)
-  try {
-    const local = JSON.parse(localStorage.getItem('pf_plates') || '{}');
-    Object.assign(plates, local);
-  } catch { }
-  // Popular tabela visual
-  const tbody = document.getElementById('plate-body');
-  tbody.innerHTML = '';
-  Object.entries(plates).forEach(([pl, info]) => {
-    const tara = typeof info === 'object' ? info.tara : info;
-    const mot  = typeof info === 'object' ? (info.motorista || '') : '';
-    addPlateRow(pl, tara, mot);
-  });
-}
-
-function addPlateRow(plate='', tara='', motorista='') {
-  const tr = document.createElement('tr');
-  tr.innerHTML = `
-    <td><input type="text" value="${plate}" placeholder="ABC1D23" oninput="savePlates()"></td>
-    <td><input type="number" value="${tara}" placeholder="11000" oninput="savePlates()"></td>
-    <td><input type="text" value="${motorista}" placeholder="Motorista" oninput="savePlates()" style="font-family:'Barlow',sans-serif;font-size:12px"></td>
-    <td><button onclick="this.closest('tr').remove();savePlates()" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:18px;padding:2px 8px">×</button></td>
-  `;
-  document.getElementById('plate-body').appendChild(tr);
-}
-
-// ══════════════════════════════════
+// ═══════════════════════════════════════
 // FILE HANDLING
-// ══════════════════════════════════
+// ═══════════════════════════════════════
 function handleFiles(files) {
   if (!files || files.length === 0) return;
   document.getElementById('queue-section').style.display = 'block';
-
   Array.from(files).forEach(file => {
     if (file.type !== 'application/pdf') return;
-    const id = ++noteId;
+    const id   = ++noteId;
     const note = { id, file, status: 'queued', data: null, ticketDone: false };
     notes.push(note);
     renderNoteCard(note);
   });
-
   updateQueueBar();
   processQueue();
-
-  // reset input so same files can be added again
   document.getElementById('file-input').value = '';
 }
 
-// drag and drop
 const zone = document.getElementById('upload-zone');
 zone.addEventListener('dragover',  e => { e.preventDefault(); zone.classList.add('dragover'); });
 zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
-zone.addEventListener('drop', e => {
-  e.preventDefault(); zone.classList.remove('dragover');
-  handleFiles(e.dataTransfer.files);
-});
+zone.addEventListener('drop', e => { e.preventDefault(); zone.classList.remove('dragover'); handleFiles(e.dataTransfer.files); });
 
-// ══════════════════════════════════
-// QUEUE PROCESSING
-// ══════════════════════════════════
+// ═══════════════════════════════════════
+// EXTRAÇÃO PDF (browser, PDF.js)
+// ═══════════════════════════════════════
 async function processQueue() {
   const queued = notes.filter(n => n.status === 'queued');
   for (const note of queued) {
     note.status = 'processing';
-    setCardState(note.id, 'processing', '⏳ Extraindo dados com IA…');
+    setCardState(note.id, 'processing', '⏳ Extraindo dados…');
     updateQueueBar();
-
     try {
       const base64 = await fileToBase64(note.file);
-      const data   = await extractFromPDF(base64, note.file.name);
+      const data   = await extractFromPDF(base64);
       note.data    = data;
       note.status  = 'ready';
       setCardState(note.id, 'ready', '✅ Pronta para gerar ticket');
       populateNoteFields(note);
     } catch(err) {
       note.status = 'error';
-      note.errMsg = err.message;
       setCardState(note.id, 'error', '❌ Erro: ' + err.message);
     }
     updateQueueBar();
@@ -371,7 +405,6 @@ function fileToBase64(file) {
   });
 }
 
-// ── Extração 100% no browser, sem servidor ──────────────────────
 async function extrairTextoPDFjs(base64) {
   if (!window.pdfjsLib) {
     await new Promise((res, rej) => {
@@ -394,28 +427,18 @@ async function extrairTextoPDFjs(base64) {
 
 function parsearDANFE(texto) {
   const r = {};
-
-  // Número da NF
   const mNF = texto.match(/N[\u00ba\u00b0o][:\s]+(\d{3,6})/);
   if (mNF) r.numero_nf = mNF[1];
-
-  // Data de saída ou emissão
   let mData = texto.match(/Emiss[\u00e3a]o\s+(\d{2}\/\d{2}\/\d{4})/);
   if (!mData) mData = texto.match(/(\d{2}\/\d{2}\/\d{4})/);
   if (mData) { const [d,mo,y]=mData[1].split('/'); r.data=y+'-'+mo+'-'+d; }
-
-  // Placa
   const mPlaca = texto.match(/\b([A-Z]{3}[-\s]?\d[A-Z0-9]\d{2})\b/);
   r.placa = mPlaca ? mPlaca[1].replace(/[-\s]/g,'') : null;
-
-  // Produto: NCM + CSO + CFOP + UNIDADE + QUANTIDADE
   const mProd = texto.match(/(\d{7,8})\s+\d{3,4}\s+\d{4}\s+(TON|M3|KG|UN)\s+([\d,]+)/);
   if (mProd) {
     const un  = mProd[2];
     const qtd = parseFloat(mProd[3].replace(',','.'));
     r.peso_carga_kg = un==='KG' ? Math.round(qtd) : Math.round(qtd*1000);
-
-    // Material: palavras antes do NCM, ignorando cabeçalhos de coluna
     const CABECALHOS = new Set(['TOTAL','ICMS','IPI','ALIQ','UNIT','SN','BC','CFOP','NCM','CSO','UNID','QUANT','VALOR','PROD','DESC','DESCRICAO']);
     const antes = texto.slice(0, texto.indexOf(mProd[0])).trim().split(/\s+/);
     const mat = [];
@@ -424,30 +447,26 @@ function parsearDANFE(texto) {
       if (CABECALHOS.has(w) || /\d/.test(w)) break;
       mat.unshift(antes[i]);
     }
-    // remover código do produto (primeira palavra curta toda maiúscula)
     if (mat.length > 0 && /^[A-Z]{2,5}$/.test(mat[0])) mat.shift();
     r.material = mat.join(' ').trim().toUpperCase();
   }
-
   return r;
 }
 
-async function extractFromPDF(base64, filename) {
+async function extractFromPDF(base64) {
   const texto = await extrairTextoPDFjs(base64);
   const dados = parsearDANFE(texto);
-  if (!dados.numero_nf) throw new Error('PDF nao reconhecido como DANFE valido.');
+  if (!dados.numero_nf) throw new Error('PDF não reconhecido como DANFE válido.');
   return dados;
 }
 
-// ══════════════════════════════════
+// ═══════════════════════════════════════
 // NOTE CARD RENDERING
-// ══════════════════════════════════
+// ═══════════════════════════════════════
 function renderNoteCard(note) {
   const list = document.getElementById('note-list');
-  // remove empty state
   const empty = list.querySelector('.empty-state');
   if (empty) empty.remove();
-
   const div = document.createElement('div');
   div.id        = `card-${note.id}`;
   div.className = 'note-card processing';
@@ -464,8 +483,7 @@ function renderNoteCard(note) {
       <div class="note-body-inner" id="fields-${note.id}">
         <div style="text-align:center;padding:20px;color:var(--gray3)"><span class="spin-sm"></span> Processando…</div>
       </div>
-    </div>
-  `;
+    </div>`;
   list.appendChild(div);
 }
 
@@ -481,18 +499,16 @@ function setCardState(id, state, subtitle) {
   const head = document.getElementById(`head-${id}`);
   const icon = document.getElementById(`icon-${id}`);
   const sub  = document.getElementById(`sub-${id}`);
-
-  const states = {
-    processing: { cardCls:'note-card processing', headCls:'note-head processing', iconHtml:'<span class="spin-sm"></span>' },
-    ready:      { cardCls:'note-card ready',      headCls:'note-head ready',      iconHtml:'✅' },
-    error:      { cardCls:'note-card error-card', headCls:'note-head error-c',    iconHtml:'❌' },
-    done:       { cardCls:'note-card done-card',  headCls:'note-head done-c',     iconHtml:'🎟️' },
+  const map  = {
+    processing: { cardCls:'note-card processing', headCls:'note-head processing', ico:'<span class="spin-sm"></span>' },
+    ready:      { cardCls:'note-card ready',       headCls:'note-head ready',      ico:'✅' },
+    error:      { cardCls:'note-card error-card',  headCls:'note-head error-c',    ico:'❌' },
+    done:       { cardCls:'note-card done-card',   headCls:'note-head done-c',     ico:'🎟️' },
   };
-
-  const s = states[state] || states.processing;
+  const s = map[state] || map.processing;
   card.className = s.cardCls;
   head.className = s.headCls;
-  icon.innerHTML = s.iconHtml;
+  icon.innerHTML = s.ico;
   if (sub) sub.textContent = subtitle;
 }
 
@@ -502,64 +518,58 @@ function populateNoteFields(note) {
   const info = plates[pl];
   const ta  = info ? (typeof info === 'object' ? info.tara : info) : undefined;
   const ca  = d.peso_carga_kg || 0;
-
   const mot = info && typeof info === 'object' ? info.motorista : '';
   const rod = info && typeof info === 'object' ? info.rodizio   : '';
-  const rodCores = {SEGUNDA:'#3b82f6',TERÇA:'#8b5cf6',QUARTA:'#f59e0b',QUINTA:'#10b981',SEXTA:'#ef4444',FRETADO:'#6b7280'};
-  const rodCor = rodCores[rod] || 'var(--gray3)';
+  const ROD_COR = {SEGUNDA:'#3b82f6',TERÇA:'#8b5cf6',QUARTA:'#f59e0b',QUINTA:'#10b981',SEXTA:'#ef4444',FRETADO:'#6b7280'};
 
   const taraHtml = ta !== undefined
-    ? `<div class="calc-box tara" id="box-tara-${note.id}"><span class="lbl">Tara do Caminhão</span><span class="val" id="val-tara-${note.id}">${fmtKG(ta)}</span></div>
-       <div class="calc-box bruto"><span class="lbl">Peso Bruto</span><span class="val" id="val-bruto-${note.id}">${fmtKG(ca + ta)}</span></div>`
-    : `<div class="calc-box warn" id="box-tara-${note.id}"><span class="lbl">Tara do Caminhão</span><span class="val" id="val-tara-${note.id}">${pl ? 'Não cadastrada' : '—'}</span></div>
-       <div class="calc-box bruto"><span class="lbl">Peso Bruto</span><span class="val" id="val-bruto-${note.id}">—</span></div>`;
-
-  const motorHtml = `
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px">
-      <div style="background:var(--bg);border-radius:8px;padding:8px 12px">
-        <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--gray3)">Motorista</div>
-        <div style="font-weight:600;font-size:13px;margin-top:2px" id="val-mot-${note.id}">${mot || '—'}</div>
-      </div>
-      <div style="background:var(--bg);border-radius:8px;padding:8px 12px">
-        <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--gray3)">Rodízio</div>
-        <div style="font-weight:700;font-size:13px;margin-top:2px;color:${rodCor}" id="val-rod-${note.id}">${rod || '—'}</div>
-      </div>
-    </div>`;
+    ? `<div class="calc-box tara"  id="box-tara-${note.id}"><span class="lbl">Tara do Caminhão</span><span class="val" id="val-tara-${note.id}">${fmtKG(ta)}</span></div>
+       <div class="calc-box bruto"                         ><span class="lbl">Peso Bruto</span>       <span class="val" id="val-bruto-${note.id}">${fmtKG(ca+ta)}</span></div>`
+    : `<div class="calc-box warn"  id="box-tara-${note.id}"><span class="lbl">Tara do Caminhão</span><span class="val" id="val-tara-${note.id}">${pl?'Não cadastrada':'—'}</span></div>
+       <div class="calc-box bruto"                         ><span class="lbl">Peso Bruto</span>       <span class="val" id="val-bruto-${note.id}">—</span></div>`;
 
   document.getElementById(`fields-${note.id}`).innerHTML = `
     <div class="field-group">
       <div class="field">
         <label>Número da Nota Fiscal</label>
-        <input type="text" id="f-nf-${note.id}"    value="${d.numero_nf||''}"       placeholder="—" oninput="syncNote(${note.id})">
+        <input type="text" id="f-nf-${note.id}" value="${d.numero_nf||''}" placeholder="—" oninput="syncNote(${note.id})">
       </div>
       <div class="row2">
         <div class="field">
           <label>Data</label>
-          <input type="date" id="f-data-${note.id}" value="${d.data||''}"            oninput="syncNote(${note.id})">
+          <input type="date" id="f-data-${note.id}" value="${d.data||''}" oninput="syncNote(${note.id})">
         </div>
         <div class="field">
           <label>Placa</label>
-          <input type="text" id="f-placa-${note.id}" value="${d.placa||''}"          placeholder="ABC1D23" oninput="refreshCalc(${note.id})">
+          <input type="text" id="f-placa-${note.id}" value="${pl}" placeholder="ABC1D23" oninput="refreshCalc(${note.id})">
         </div>
       </div>
       <div class="field">
-        <label>Peso da Carga (KG)</label>
-        <input type="number" id="f-carga-${note.id}" value="${d.peso_carga_kg||''}" placeholder="0" oninput="refreshCalc(${note.id})">
+        <label>Peso Líquido (KG)</label>
+        <input type="number" id="f-carga-${note.id}" value="${ca||''}" placeholder="0" oninput="refreshCalc(${note.id})">
       </div>
       <div class="field">
-        <label>Material Transportado</label>
-        <input type="text" id="f-mat-${note.id}"   value="${d.material||''}"        placeholder="—" oninput="syncNote(${note.id})">
+        <label>Material</label>
+        <input type="text" id="f-mat-${note.id}" value="${d.material||''}" placeholder="—" oninput="syncNote(${note.id})">
       </div>
     </div>
     <div class="calc-strip">${taraHtml}</div>
-    ${motorHtml}
+    <div class="info-pills">
+      <div class="info-pill">
+        <div class="lbl">Motorista</div>
+        <div class="val" id="val-mot-${note.id}">${mot||'—'}</div>
+      </div>
+      <div class="info-pill">
+        <div class="lbl">Rodízio</div>
+        <div class="val" id="val-rod-${note.id}" style="color:${ROD_COR[rod]||'var(--gray3)'};font-weight:700">${rod||'—'}</div>
+      </div>
+    </div>
     <div class="note-actions">
       <button class="btn-ticket" id="btn-ticket-${note.id}" onclick="generateOne(${note.id})">🖨 GERAR TICKET</button>
       <button class="btn-remove" onclick="removeNote(${note.id})" title="Remover">🗑</button>
-    </div>
-  `;
+    </div>`;
 
-  // auto-open card when ready
+  // abrir card automaticamente
   const body  = document.getElementById(`body-${note.id}`);
   const arrow = document.getElementById(`arrow-${note.id}`);
   body.classList.add('open');
@@ -569,13 +579,13 @@ function populateNoteFields(note) {
 function refreshCalc(id) {
   const note = notes.find(n => n.id === id);
   if (!note) return;
-
-  const pl    = (document.getElementById(`f-placa-${id}`)?.value || '').toUpperCase().replace(/[^A-Z0-9]/g,'');
-  const ca    = parseInt(document.getElementById(`f-carga-${id}`)?.value) || 0;
-  const info  = plates[pl];
-  const ta    = info ? (typeof info === 'object' ? info.tara    : info)  : undefined;
-  const mot   = info && typeof info === 'object' ? info.motorista : '';
-  const rod   = info && typeof info === 'object' ? info.rodizio   : '';
+  const pl   = (document.getElementById(`f-placa-${id}`)?.value||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
+  const ca   = parseInt(document.getElementById(`f-carga-${id}`)?.value)||0;
+  const info = plates[pl];
+  const ta   = info ? (typeof info==='object' ? info.tara : info) : undefined;
+  const mot  = info && typeof info==='object' ? info.motorista : '';
+  const rod  = info && typeof info==='object' ? info.rodizio   : '';
+  const ROD_COR = {SEGUNDA:'#3b82f6',TERÇA:'#8b5cf6',QUARTA:'#f59e0b',QUINTA:'#10b981',SEXTA:'#ef4444',FRETADO:'#6b7280'};
 
   const boxEl = document.getElementById(`box-tara-${id}`);
   const taEl  = document.getElementById(`val-tara-${id}`);
@@ -583,22 +593,16 @@ function refreshCalc(id) {
   const motEl = document.getElementById(`val-mot-${id}`);
   const rodEl = document.getElementById(`val-rod-${id}`);
 
-  if (!taEl || !brEl) return;
-
   if (ta !== undefined) {
     if (boxEl) boxEl.className = 'calc-box tara';
-    taEl.textContent = fmtKG(ta);
-    brEl.textContent = fmtKG(ca + ta);
+    if (taEl)  taEl.textContent = fmtKG(ta);
+    if (brEl)  brEl.textContent = fmtKG(ca + ta);
     if (motEl) motEl.textContent = mot || '—';
-    if (rodEl) {
-      const cores = {SEGUNDA:'#3b82f6',TERÇA:'#8b5cf6',QUARTA:'#f59e0b',QUINTA:'#10b981',SEXTA:'#ef4444',FRETADO:'#6b7280'};
-      rodEl.textContent = rod || '—';
-      rodEl.style.color = cores[rod] || 'var(--gray2)';
-    }
+    if (rodEl) { rodEl.textContent = rod||'—'; rodEl.style.color = ROD_COR[rod]||'var(--gray3)'; }
   } else {
     if (boxEl) boxEl.className = pl ? 'calc-box warn' : 'calc-box tara';
-    taEl.textContent = pl ? 'Não cadastrada' : '—';
-    brEl.textContent = '—';
+    if (taEl)  taEl.textContent = pl ? 'Não cadastrada' : '—';
+    if (brEl)  brEl.textContent = '—';
     if (motEl) motEl.textContent = '—';
     if (rodEl) { rodEl.textContent = '—'; rodEl.style.color = 'var(--gray3)'; }
   }
@@ -621,45 +625,34 @@ function removeNote(id) {
   const el = document.getElementById(`card-${id}`);
   if (el) el.remove();
   if (notes.length === 0) {
-    document.getElementById('note-list').innerHTML = `
-      <div class="empty-state"><span class="e-icon">📭</span><p>Nenhuma nota na fila</p></div>`;
+    document.getElementById('note-list').innerHTML = `<div class="empty-state"><span class="e-icon">📭</span><p>Nenhuma nota na fila</p></div>`;
     document.getElementById('queue-section').style.display = 'none';
   }
   updateQueueBar();
 }
 
-// ══════════════════════════════════
+// ═══════════════════════════════════════
 // QUEUE BAR
-// ══════════════════════════════════
+// ═══════════════════════════════════════
 function updateQueueBar() {
   const total = notes.length;
-  const proc  = notes.filter(n => n.status === 'processing' || n.status === 'queued').length;
-  const ready = notes.filter(n => n.status === 'ready').length;
-  const err   = notes.filter(n => n.status === 'error').length;
-  const done  = notes.filter(n => n.ticketDone).length;
-
+  const proc  = notes.filter(n => n.status==='processing'||n.status==='queued').length;
+  const ready = notes.filter(n => n.status==='ready').length;
+  const err   = notes.filter(n => n.status==='error').length;
   document.getElementById('qc-total').textContent = total;
   document.getElementById('qc-proc').textContent  = proc;
   document.getElementById('qc-ready').textContent = ready;
   document.getElementById('qc-err').textContent   = err;
-
-  const genAll = document.getElementById('btn-gen-all');
-  genAll.disabled = ready === 0;
-
+  document.getElementById('btn-gen-all').disabled = ready === 0;
   const pw = document.getElementById('progress-wrap');
   const pf = document.getElementById('progress-fill');
-  if (total > 0 && proc > 0) {
-    pw.style.display = 'block';
-    pf.style.width   = Math.round(((total - proc) / total) * 100) + '%';
-  } else {
-    pw.style.display = 'none';
-  }
+  if (total > 0 && proc > 0) { pw.style.display='block'; pf.style.width=Math.round(((total-proc)/total)*100)+'%'; }
+  else { pw.style.display='none'; }
 }
 
-// ══════════════════════════════════
+// ═══════════════════════════════════════
 // PDF GENERATION
-// ══════════════════════════════════
-// Carrega imagem local como base64 para o jsPDF
+// ═══════════════════════════════════════
 function loadImageAsBase64(src) {
   return new Promise((resolve, reject) => {
     const img = new Image();
@@ -679,60 +672,65 @@ function loadImageAsBase64(src) {
 async function buildPDF(note) {
   const { jsPDF } = window.jspdf;
   syncNote(note.id);
+  const emp   = EMPRESAS[empresa];
   const d     = note.data || {};
   const nf    = d.numero_nf || '—';
   const dataV = d.data || '';
   const carga = d.peso_carga_kg || 0;
   const placa = (d.placa || '').toUpperCase().replace(/[^A-Z0-9]/g,'') || '—';
   const mat   = (d.material || '—').toUpperCase();
-  const _pinfo = plates[placa]; const tara = _pinfo ? (typeof _pinfo === 'object' ? _pinfo.tara : _pinfo) : 0;
+  const pinfo = plates[placa];
+  const tara  = pinfo ? (typeof pinfo==='object' ? pinfo.tara : pinfo) : 0;
   const bruto = carga + tara;
   const dataFmt = dataV ? fmtDate(dataV) : '—';
 
-  const W = 80, H = 152;
+  const W = 80, H = 155;
   const doc = new jsPDF({ unit:'mm', format:[W,H] });
   const cx  = W / 2;
-  let y     = 0;
+  let y = 0;
 
-  // Header verde
-  doc.setFillColor(27, 94, 32);
+  // ── Header colorido ──
+  doc.setFillColor(...emp.cor);
   doc.rect(0, 0, W, 34, 'F');
 
-  // Logo no header — carrega de logo.png
+  // ── Logo ──
   try {
-    const logoImg = await loadImageAsBase64('logo.png');
-    // Logo centralizada no header, altura 24mm
-    doc.addImage(logoImg, 'PNG', cx - 16, 3, 32, 28);
+    const logoImg = await loadImageAsBase64(emp.logo);
+    // calcular proporção para caber em 34mm de altura e ~50mm de largura máxima
+    const tmpImg = new Image();
+    await new Promise(r => { tmpImg.onload = r; tmpImg.src = logoImg; });
+    const aspect = tmpImg.naturalWidth / tmpImg.naturalHeight;
+    const lh = 26, lw = Math.min(lh * aspect, 60);
+    doc.addImage(logoImg, 'PNG', cx - lw/2, (34 - lh)/2, lw, lh);
   } catch(e) {
-    // Fallback texto se logo não carregar
-    doc.setFont('helvetica','bold');
-    doc.setFontSize(22);
-    doc.setTextColor(255,255,255);
-    doc.text('PF', cx, 16, { align:'center' });
-    doc.setFontSize(7);
-    doc.setTextColor(180,230,180);
-    doc.text('PORTO FORTALEZA', cx, 26, { align:'center' });
+    doc.setFont('helvetica','bold'); doc.setFontSize(22); doc.setTextColor(255,255,255);
+    doc.text(emp.nome.substring(0,2).toUpperCase(), cx, 20, { align:'center' });
   }
 
   y = 40;
+
+  // ── Nome da empresa ──
   doc.setFont('helvetica','bold');
   doc.setFontSize(8);
-  doc.setTextColor(25,25,25);
-  doc.text('PORTO FORTALEZA AREIA E PEDRA', cx, y, { align:'center' });
+  doc.setTextColor(20, 20, 20);
+  doc.text(emp.subNome, cx, y, { align:'center' });
   y += 5;
-  doc.setFont('helvetica','normal');
-  doc.setFontSize(7);
-  doc.setTextColor(120,120,120);
-  doc.text('AV. PEDRO DE SOUZA LOPES N4199', cx, y, { align:'center' });
-  y += 5;
+
+  if (emp.endereco) {
+    doc.setFont('helvetica','normal');
+    doc.setFontSize(7);
+    doc.setTextColor(100, 100, 100);
+    doc.text(emp.endereco, cx, y, { align:'center' });
+    y += 5;
+  }
 
   doc.setDrawColor(200,200,200);
   doc.setLineDash([1.5,1.5]);
   doc.line(4, y, W-4, y);
   y += 6;
 
-  // Orange title bar
-  doc.setFillColor(46,125,50);
+  // ── Título TICKET DE PESAGEM ──
+  doc.setFillColor(...emp.corMid);
   doc.roundedRect(8, y-4, W-16, 10, 2, 2, 'F');
   doc.setFont('helvetica','bold');
   doc.setFontSize(9);
@@ -745,6 +743,7 @@ async function buildPDF(note) {
   doc.line(4, y, W-4, y);
   y += 6;
 
+  // ── Dados — TUDO EM NEGRITO ──
   const rows = [
     ['PESO LIQUIDO:', fmtKG(carga)],
     ['TARA:',         fmtKG(tara)],
@@ -756,8 +755,8 @@ async function buildPDF(note) {
 
   doc.setFontSize(8);
   rows.forEach(([lbl, val]) => {
-    doc.setFont('helvetica','normal'); doc.setTextColor(120,120,120); doc.text(lbl, 6, y);
-    doc.setFont('helvetica','bold');   doc.setTextColor(20,20,20);    doc.text(val, W-6, y, {align:'right'});
+    doc.setFont('helvetica','bold'); doc.setTextColor(80,80,80);  doc.text(lbl, 6, y);
+    doc.setFont('helvetica','bold'); doc.setTextColor(10,10,10);  doc.text(val, W-6, y, { align:'right' });
     y += 7;
   });
 
@@ -765,9 +764,10 @@ async function buildPDF(note) {
   doc.line(4, y, W-4, y);
   y += 7;
 
+  // ── Material em negrito ──
   doc.setFont('helvetica','bold');
   doc.setFontSize(10);
-  doc.setTextColor(20,20,20);
+  doc.setTextColor(10,10,10);
   const matLines = doc.splitTextToSize(mat, W-12);
   doc.text(matLines, cx, y, { align:'center' });
   y += matLines.length * 6 + 4;
@@ -776,9 +776,16 @@ async function buildPDF(note) {
   doc.line(4, y, W-4, y);
   y += 6;
 
+  // ── Rodapé dinâmico por empresa ──
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(7);
+  doc.setTextColor(80,80,80);
+  doc.text(emp.rodape, cx, y, { align:'center' });
+  y += 5;
+
   doc.setFont('helvetica','normal');
   doc.setFontSize(7);
-  doc.setTextColor(100,100,100);
+  doc.setTextColor(130,130,130);
   doc.text('CERTIFICADO DE PESAGEM INMETRO', cx, y, { align:'center' });
 
   return { doc, filename: `ticket da NF${nf} ${placa}.pdf` };
@@ -797,17 +804,18 @@ async function generateOne(id) {
 }
 
 async function generateAll() {
-  const ready = notes.filter(n => n.status === 'ready' && !n.ticketDone);
+  const ready = notes.filter(n => n.status==='ready' && !n.ticketDone);
   for (const note of ready) { await generateOne(note.id); }
 }
 
-// ══════════════════════════════════
+// ═══════════════════════════════════════
 // UTILS
-// ══════════════════════════════════
+// ═══════════════════════════════════════
 function fmtKG(n)   { return (n||0).toLocaleString('pt-BR') + ' KG'; }
 function fmtDate(v) { if(!v) return '—'; const[y,m,d]=v.split('-'); return `${d}/${m}/${y}`; }
 
 // INIT
+document.getElementById('truck-body').style.display = 'none';
 loadPlates();
 </script>
 </body>
