@@ -689,57 +689,61 @@ async function buildPDF(note) {
   const cx  = W / 2;
   let y = 0;
 
-  // ── Header colorido ──
-  doc.setFillColor(...emp.cor);
-  doc.rect(0, 0, W, 34, 'F');
+  // ── Borda superior preta ──
+  doc.setDrawColor(0,0,0);
+  doc.setLineWidth(0.8);
+  doc.setLineDash([]);
+  doc.line(0, 0, W, 0);
 
   // ── Logo ──
   try {
     const logoImg = await loadImageAsBase64(emp.logo);
-    // calcular proporção para caber em 34mm de altura e ~50mm de largura máxima
     const tmpImg = new Image();
     await new Promise(r => { tmpImg.onload = r; tmpImg.src = logoImg; });
     const aspect = tmpImg.naturalWidth / tmpImg.naturalHeight;
-    const lh = 26, lw = Math.min(lh * aspect, 60);
-    doc.addImage(logoImg, 'PNG', cx - lw/2, (34 - lh)/2, lw, lh);
+    const lh = 22, lw = Math.min(lh * aspect, 55);
+    doc.addImage(logoImg, 'PNG', cx - lw/2, 4, lw, lh);
   } catch(e) {
-    doc.setFont('helvetica','bold'); doc.setFontSize(22); doc.setTextColor(255,255,255);
-    doc.text(emp.nome.substring(0,2).toUpperCase(), cx, 20, { align:'center' });
+    doc.setFont('helvetica','bold'); doc.setFontSize(22); doc.setTextColor(0,0,0);
+    doc.text(emp.nome.substring(0,2).toUpperCase(), cx, 16, { align:'center' });
   }
 
-  y = 40;
+  y = 30;
 
   // ── Nome da empresa ──
   doc.setFont('helvetica','bold');
   doc.setFontSize(8);
-  doc.setTextColor(20, 20, 20);
+  doc.setTextColor(0, 0, 0);
   doc.text(emp.subNome, cx, y, { align:'center' });
   y += 5;
 
   if (emp.endereco) {
     doc.setFont('helvetica','normal');
     doc.setFontSize(7);
-    doc.setTextColor(100, 100, 100);
+    doc.setTextColor(60, 60, 60);
     doc.text(emp.endereco, cx, y, { align:'center' });
     y += 5;
   }
 
-  doc.setDrawColor(200,200,200);
-  doc.setLineDash([1.5,1.5]);
+  doc.setDrawColor(0,0,0);
+  doc.setLineWidth(0.4);
+  doc.setLineDash([]);
   doc.line(4, y, W-4, y);
   y += 6;
 
-  // ── Título TICKET DE PESAGEM ──
-  doc.setFillColor(...emp.corMid);
-  doc.roundedRect(8, y-4, W-16, 10, 2, 2, 'F');
+  // ── Título TICKET DE PESAGEM — borda preta ──
+  doc.setDrawColor(0,0,0);
+  doc.setLineWidth(0.6);
+  doc.roundedRect(8, y-4, W-16, 10, 2, 2, 'S');
   doc.setFont('helvetica','bold');
   doc.setFontSize(9);
-  doc.setTextColor(255,255,255);
+  doc.setTextColor(0,0,0);
   doc.text('TICKET DE PESAGEM', cx, y+3, { align:'center' });
   y += 13;
 
-  doc.setLineDash([1.5,1.5]);
-  doc.setDrawColor(200,200,200);
+  doc.setDrawColor(0,0,0);
+  doc.setLineWidth(0.4);
+  doc.setLineDash([]);
   doc.line(4, y, W-4, y);
   y += 6;
 
@@ -755,12 +759,12 @@ async function buildPDF(note) {
 
   doc.setFontSize(8);
   rows.forEach(([lbl, val]) => {
-    doc.setFont('helvetica','bold'); doc.setTextColor(80,80,80);  doc.text(lbl, 6, y);
+    doc.setFont('helvetica','bold'); doc.setTextColor(0,0,0);     doc.text(lbl, 6, y);
     doc.setFont('helvetica','bold'); doc.setTextColor(10,10,10);  doc.text(val, W-6, y, { align:'right' });
     y += 7;
   });
 
-  doc.setLineDash([1.5,1.5]);
+  doc.setDrawColor(0,0,0); doc.setLineWidth(0.3); doc.setLineDash([]);
   doc.line(4, y, W-4, y);
   y += 7;
 
@@ -772,20 +776,20 @@ async function buildPDF(note) {
   doc.text(matLines, cx, y, { align:'center' });
   y += matLines.length * 6 + 4;
 
-  doc.setLineDash([1.5,1.5]);
+  doc.setDrawColor(0,0,0); doc.setLineWidth(0.3); doc.setLineDash([]);
   doc.line(4, y, W-4, y);
   y += 6;
 
   // ── Rodapé dinâmico por empresa ──
   doc.setFont('helvetica','bold');
   doc.setFontSize(7);
-  doc.setTextColor(80,80,80);
+  doc.setTextColor(0,0,0);
   doc.text(emp.rodape, cx, y, { align:'center' });
   y += 5;
 
   doc.setFont('helvetica','normal');
   doc.setFontSize(7);
-  doc.setTextColor(130,130,130);
+  doc.setTextColor(60,60,60);
   doc.text('CERTIFICADO DE PESAGEM INMETRO', cx, y, { align:'center' });
 
   return { doc, filename: `ticket da NF${nf} ${placa}.pdf` };
