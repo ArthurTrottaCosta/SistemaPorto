@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>Gerador de Ticket</title>
+<title>Gerador de Ticket v2.0</title>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -168,6 +168,91 @@ main { max-width:640px; margin:0 auto; padding:20px 14px 60px; }
 </head>
 <body>
 
+<!-- ══ TELA DE LOGIN (sobrepõe tudo) ══ -->
+<div id="auth-screen" style="position:fixed;inset:0;background:#1B5E20;z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px">
+  <div style="background:#fff;border-radius:16px;width:100%;max-width:380px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.4)">
+    
+    <!-- Logo no topo -->
+    <div style="background:#1B5E20;padding:24px;text-align:center">
+      <img id="login-logo" src="logo.png" style="height:60px;object-fit:contain">
+    </div>
+
+    <!-- Tabs Login / Cadastro -->
+    <div style="display:flex;border-bottom:2px solid #E8F5E9">
+      <button onclick="showTab('login')" id="tab-login" style="flex:1;padding:12px;border:none;background:#fff;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:15px;letter-spacing:1px;cursor:pointer;color:#1B5E20;border-bottom:3px solid #1B5E20;margin-bottom:-2px">ENTRAR</button>
+      <button onclick="showTab('cadastro')" id="tab-cadastro" style="flex:1;padding:12px;border:none;background:#fff;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:15px;letter-spacing:1px;cursor:pointer;color:#8A8A8E;border-bottom:3px solid transparent;margin-bottom:-2px">CADASTRAR</button>
+    </div>
+
+    <div style="padding:24px">
+
+      <!-- FORM LOGIN -->
+      <div id="form-login">
+        <div style="margin-bottom:12px">
+          <label style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:11px;letter-spacing:2px;color:#8A8A8E;display:block;margin-bottom:4px">EMAIL</label>
+          <input id="login-email" type="email" placeholder="seu@email.com" style="width:100%;padding:10px 12px;border:2px solid #E8E8EC;border-radius:8px;font-size:15px;outline:none;font-family:'Barlow',sans-serif" onfocus="this.style.borderColor='#2E7D32'" onblur="this.style.borderColor='#E8E8EC'">
+        </div>
+        <div style="margin-bottom:16px">
+          <label style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:11px;letter-spacing:2px;color:#8A8A8E;display:block;margin-bottom:4px">SENHA</label>
+          <input id="login-senha" type="password" placeholder="••••••••" style="width:100%;padding:10px 12px;border:2px solid #E8E8EC;border-radius:8px;font-size:15px;outline:none;font-family:'Barlow',sans-serif" onfocus="this.style.borderColor='#2E7D32'" onblur="this.style.borderColor='#E8E8EC'" onkeydown="if(event.key==='Enter')loginUser()">
+        </div>
+        <button onclick="loginUser()" style="width:100%;padding:13px;background:#1B5E20;color:#fff;border:none;border-radius:9px;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:17px;letter-spacing:1px;cursor:pointer">ENTRAR</button>
+        <div id="login-erro" style="color:#C0392B;font-size:13px;text-align:center;margin-top:10px;display:none"></div>
+      </div>
+
+      <!-- FORM CADASTRO -->
+      <div id="form-cadastro" style="display:none">
+        <div style="margin-bottom:12px">
+          <label style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:11px;letter-spacing:2px;color:#8A8A8E;display:block;margin-bottom:4px">NOME</label>
+          <input id="cad-nome" type="text" placeholder="Seu nome" style="width:100%;padding:10px 12px;border:2px solid #E8E8EC;border-radius:8px;font-size:15px;outline:none;font-family:'Barlow',sans-serif" onfocus="this.style.borderColor='#2E7D32'" onblur="this.style.borderColor='#E8E8EC'">
+        </div>
+        <div style="margin-bottom:12px">
+          <label style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:11px;letter-spacing:2px;color:#8A8A8E;display:block;margin-bottom:4px">EMAIL</label>
+          <input id="cad-email" type="email" placeholder="seu@email.com" style="width:100%;padding:10px 12px;border:2px solid #E8E8EC;border-radius:8px;font-size:15px;outline:none;font-family:'Barlow',sans-serif" onfocus="this.style.borderColor='#2E7D32'" onblur="this.style.borderColor='#E8E8EC'">
+        </div>
+        <div style="margin-bottom:16px">
+          <label style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:11px;letter-spacing:2px;color:#8A8A8E;display:block;margin-bottom:4px">SENHA</label>
+          <input id="cad-senha" type="password" placeholder="mínimo 6 caracteres" style="width:100%;padding:10px 12px;border:2px solid #E8E8EC;border-radius:8px;font-size:15px;outline:none;font-family:'Barlow',sans-serif" onfocus="this.style.borderColor='#2E7D32'" onblur="this.style.borderColor='#E8E8EC'">
+        </div>
+        <button onclick="cadastrarUser()" style="width:100%;padding:13px;background:#1B5E20;color:#fff;border:none;border-radius:9px;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:17px;letter-spacing:1px;cursor:pointer">SOLICITAR ACESSO</button>
+        <div id="cad-erro" style="color:#C0392B;font-size:13px;text-align:center;margin-top:10px;display:none"></div>
+        <div id="cad-ok" style="color:#2E7D32;font-size:13px;text-align:center;margin-top:10px;display:none">✅ Cadastro enviado! Aguarde aprovação do administrador.</div>
+      </div>
+
+      <!-- Botão secreto dono — invisível, aparece ao clicar 7x no rodapé -->
+      <div id="secret-area" onclick="secretClick()" style="height:20px;cursor:default;margin-top:8px"></div>
+      <div id="owner-panel" style="display:none;margin-top:12px;border-top:1px solid #E8E8EC;padding-top:12px">
+        <label style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:11px;letter-spacing:2px;color:#8A8A8E;display:block;margin-bottom:4px">CHAVE DO ADMINISTRADOR</label>
+        <div style="display:flex;gap:8px">
+          <input id="owner-key" type="password" placeholder="chave secreta" style="flex:1;padding:10px 12px;border:2px solid #E8E8EC;border-radius:8px;font-size:14px;outline:none" onkeydown="if(event.key==='Enter')verificarChave()">
+          <button onclick="verificarChave()" style="padding:10px 14px;background:#1B5E20;color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer">OK</button>
+        </div>
+        <div id="owner-erro" style="color:#C0392B;font-size:12px;margin-top:6px;display:none"></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ══ PAINEL DO DONO — aprovação de contas ══ -->
+<div id="owner-screen" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9998;align-items:center;justify-content:center;padding:20px">
+  <div style="background:#fff;border-radius:16px;width:100%;max-width:500px;max-height:80vh;overflow:hidden;display:flex;flex-direction:column">
+    <div style="background:#1B5E20;padding:16px 20px;display:flex;align-items:center;justify-content:space-between">
+      <span style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:18px;color:#fff;letter-spacing:1px">👑 PAINEL DO ADMINISTRADOR</span>
+      <button onclick="fecharOwnerScreen()" style="background:rgba(255,255,255,.2);border:none;color:#fff;border-radius:6px;padding:4px 10px;cursor:pointer;font-size:16px">✕</button>
+    </div>
+    <div style="padding:16px;overflow-y:auto;flex:1">
+      <h3 style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:15px;letter-spacing:1px;color:#3A3A3C;margin-bottom:12px">CONTAS PENDENTES</h3>
+      <div id="lista-pendentes" style="display:flex;flex-direction:column;gap:8px">
+        <div style="color:#8A8A8E;font-size:13px">Carregando...</div>
+      </div>
+      <h3 style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:15px;letter-spacing:1px;color:#3A3A3C;margin:16px 0 12px">CONTAS APROVADAS</h3>
+      <div id="lista-aprovados" style="display:flex;flex-direction:column;gap:8px">
+        <div style="color:#8A8A8E;font-size:13px">Carregando...</div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div id="toast"></div>
 <div class="header">
   <div class="header-inner">
@@ -178,10 +263,14 @@ main { max-width:640px; margin:0 auto; padding:20px 14px 60px; }
       <h1 id="hdr-nome">Porto Fortaleza</h1>
       <p>Gerador Automático de Ticket</p>
     </div>
-    <div style="display:flex;align-items:center;padding:0 12px;gap:6px" id="sb-status-wrap">
-      <span id="sb-dot" style="width:8px;height:8px;border-radius:50%;background:#ffd93d;display:inline-block;flex-shrink:0"></span>
-      <span id="sb-label" style="font-size:10px;color:rgba(255,255,255,.6);letter-spacing:.5px">conectando...</span>
+    <div style="display:flex;align-items:center;gap:8px;padding:0 8px;margin-left:auto">
+      <button id="btn-owner" onclick="carregarOwnerScreen()" style="display:none;align-items:center;gap:4px;background:rgba(255,255,255,.15);border:none;color:#fff;border-radius:6px;padding:5px 10px;cursor:pointer;font-size:13px;font-weight:700">👑</button>
+      <div style="text-align:right">
+        <div id="hdr-user" style="font-size:12px;color:rgba(255,255,255,.9);font-weight:600;max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></div>
+        <button onclick="logoutUser()" style="background:none;border:none;color:rgba(255,255,255,.5);font-size:10px;cursor:pointer;letter-spacing:.5px;padding:0">SAIR</button>
+      </div>
     </div>
+
     <div class="empresa-switch">
       <button class="empresa-btn active" id="btn-pf" onclick="setEmpresa('PF')">Porto Fortaleza</button>
       <button class="empresa-btn"        id="btn-cr" onclick="setEmpresa('CR')">CR Ambiental</button>
@@ -259,6 +348,7 @@ main { max-width:640px; margin:0 auto; padding:20px 14px 60px; }
 
 </main>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
 // ═══════════════════════════════════════
@@ -282,25 +372,219 @@ function setSbStatus(status) {
 }
 
 // ═══════════════════════════════════════
-// SUPABASE
+// SUPABASE SDK
 // ═══════════════════════════════════════
 const SB_URL = 'https://qckueyfmecurgpjxjvnq.supabase.co';
 const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFja3VleWZtZWN1cmdwanhqdm5xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzMjM0OTcsImV4cCI6MjA4ODg5OTQ5N30.ELGEBinPf3T2oiaLtmHhnZ-LZOaE_ZBL5YvKMYafPWU';
+const OWNER_KEY = 'pf2025admin'; // chave secreta do dono
 
+const sbClient = supabase.createClient(SB_URL, SB_KEY);
+let currentUser = null;
+let currentUserData = null;
+
+// Helper genérico para REST API (tabelas)
 async function sbFetch(path, method='GET', body=null) {
+  const session = await sbClient.auth.getSession();
+  const token   = session?.data?.session?.access_token || SB_KEY;
   const opts = {
     method,
     headers: {
       'apikey': SB_KEY,
-      'Authorization': 'Bearer ' + SB_KEY,
+      'Authorization': 'Bearer ' + token,
       'Content-Type': 'application/json',
-      'Prefer': method==='POST' ? 'resolution=merge-duplicates,return=minimal' : ''
+      'Prefer': method==='POST' ? 'resolution=merge-duplicates,return=minimal' : (method==='PATCH' ? 'return=minimal' : '')
     }
   };
   if (body) opts.body = JSON.stringify(body);
   const r = await fetch(SB_URL + path, opts);
   if (!r.ok) throw new Error('Supabase: ' + r.status);
-  return method === 'GET' ? r.json() : null;
+  if (method === 'GET') return r.json();
+  return null;
+}
+
+// ═══════════════════════════════════════
+// AUTH
+// ═══════════════════════════════════════
+let secretCount = 0, secretTimer;
+function secretClick() {
+  secretCount++;
+  clearTimeout(secretTimer);
+  secretTimer = setTimeout(() => secretCount = 0, 2000);
+  if (secretCount >= 7) {
+    document.getElementById('owner-panel').style.display = 'block';
+    secretCount = 0;
+  }
+}
+
+function showTab(tab) {
+  document.getElementById('form-login').style.display    = tab==='login'    ? '' : 'none';
+  document.getElementById('form-cadastro').style.display = tab==='cadastro' ? '' : 'none';
+  document.getElementById('tab-login').style.color       = tab==='login'    ? '#1B5E20' : '#8A8A8E';
+  document.getElementById('tab-cadastro').style.color    = tab==='cadastro' ? '#1B5E20' : '#8A8A8E';
+  document.getElementById('tab-login').style.borderBottomColor    = tab==='login'    ? '#1B5E20' : 'transparent';
+  document.getElementById('tab-cadastro').style.borderBottomColor = tab==='cadastro' ? '#1B5E20' : 'transparent';
+}
+
+async function loginUser() {
+  const email = document.getElementById('login-email').value.trim();
+  const senha = document.getElementById('login-senha').value;
+  const erroEl = document.getElementById('login-erro');
+  erroEl.style.display = 'none';
+
+  if (!email || !senha) { erroEl.textContent='Preencha email e senha'; erroEl.style.display='block'; return; }
+
+  const { data, error } = await sbClient.auth.signInWithPassword({ email, password: senha });
+  if (error) { erroEl.textContent='Email ou senha incorretos'; erroEl.style.display='block'; return; }
+
+  await verificarAcesso(data.user);
+}
+
+async function cadastrarUser() {
+  const nome  = document.getElementById('cad-nome').value.trim();
+  const email = document.getElementById('cad-email').value.trim();
+  const senha = document.getElementById('cad-senha').value;
+  const erroEl = document.getElementById('cad-erro');
+  const okEl   = document.getElementById('cad-ok');
+  erroEl.style.display = 'none';
+  okEl.style.display   = 'none';
+
+  if (!nome || !email || !senha) { erroEl.textContent='Preencha todos os campos'; erroEl.style.display='block'; return; }
+  if (senha.length < 6) { erroEl.textContent='Senha mínimo 6 caracteres'; erroEl.style.display='block'; return; }
+
+  const { data, error } = await sbClient.auth.signUp({ email, password: senha });
+  if (error) { erroEl.textContent=error.message; erroEl.style.display='block'; return; }
+
+  // Criar registro na tabela usuarios (aprovado=false)
+  await sbFetch('/rest/v1/usuarios', 'POST', [{
+    id: data.user.id, email, nome, aprovado: false, role: 'user'
+  }]);
+
+  okEl.style.display = 'block';
+}
+
+async function verificarChave() {
+  const chave = document.getElementById('owner-key').value;
+  const erroEl = document.getElementById('owner-erro');
+  if (chave !== OWNER_KEY) { erroEl.textContent='Chave incorreta'; erroEl.style.display='block'; return; }
+
+  // Esconder painel secreto permanentemente neste browser
+  document.getElementById('owner-panel').style.display = 'none';
+  document.getElementById('secret-area').onclick = null;
+  localStorage.setItem('pf_owner', '1');
+
+  // Fazer login como owner — criar conta owner se não existir
+  toast('🔑 Acesso de administrador ativado!', 'ok');
+  await carregarOwnerScreen();
+}
+
+async function verificarAcesso(user) {
+  currentUser = user;
+  // Buscar dados do usuário
+  try {
+    const rows = await sbFetch(`/rest/v1/usuarios?id=eq.${user.id}&select=*`);
+    if (rows && rows.length > 0) {
+      currentUserData = rows[0];
+      if (currentUserData.aprovado || currentUserData.role === 'owner') {
+        entrarNoSistema();
+      } else {
+        // Não aprovado ainda
+        document.getElementById('login-erro').textContent = '⏳ Sua conta aguarda aprovação do administrador.';
+        document.getElementById('login-erro').style.display = 'block';
+        await sbClient.auth.signOut();
+      }
+    } else {
+      // Primeiro owner — criar registro automaticamente
+      await sbFetch('/rest/v1/usuarios', 'POST', [{
+        id: user.id, email: user.email, nome: 'Administrador', aprovado: true, role: 'owner'
+      }]);
+      currentUserData = { aprovado: true, role: 'owner' };
+      entrarNoSistema();
+    }
+  } catch(e) {
+    entrarNoSistema(); // fallback se tabela não existir
+  }
+}
+
+function entrarNoSistema() {
+  document.getElementById('auth-screen').style.display = 'none';
+  // Mostrar nome do usuário no header
+  const nome = currentUserData?.nome || currentUser?.email || '';
+  const isOwner = currentUserData?.role === 'owner';
+  document.getElementById('hdr-user').textContent = nome;
+  if (isOwner) document.getElementById('btn-owner').style.display = 'flex';
+  toast(`👋 Bem-vindo, ${nome.split(' ')[0]}!`, 'ok');
+  loadPlates();
+}
+
+async function carregarOwnerScreen() {
+  document.getElementById('owner-screen').style.display = 'flex';
+  // Pendentes
+  const pendentes = await sbFetch('/rest/v1/usuarios?aprovado=eq.false&select=*&order=created_at');
+  const listaP = document.getElementById('lista-pendentes');
+  if (!pendentes || pendentes.length === 0) {
+    listaP.innerHTML = '<div style="color:#8A8A8E;font-size:13px">Nenhuma conta pendente</div>';
+  } else {
+    listaP.innerHTML = pendentes.map(u => `
+      <div style="display:flex;align-items:center;justify-content:space-between;background:#F4F5F2;border-radius:8px;padding:10px 14px">
+        <div>
+          <div style="font-weight:700;font-size:14px">${u.nome}</div>
+          <div style="font-size:12px;color:#8A8A8E">${u.email}</div>
+        </div>
+        <div style="display:flex;gap:6px">
+          <button onclick="aprovarUser('${u.id}')" style="padding:6px 12px;background:#2E7D32;color:#fff;border:none;border-radius:6px;font-weight:700;font-size:12px;cursor:pointer">✓ APROVAR</button>
+          <button onclick="recusarUser('${u.id}')" style="padding:6px 10px;background:#C0392B;color:#fff;border:none;border-radius:6px;font-weight:700;font-size:12px;cursor:pointer">✕</button>
+        </div>
+      </div>`).join('');
+  }
+  // Aprovados
+  const aprovados = await sbFetch('/rest/v1/usuarios?aprovado=eq.true&select=*&order=nome');
+  const listaA = document.getElementById('lista-aprovados');
+  if (!aprovados || aprovados.length === 0) {
+    listaA.innerHTML = '<div style="color:#8A8A8E;font-size:13px">Nenhuma conta aprovada</div>';
+  } else {
+    listaA.innerHTML = aprovados.map(u => `
+      <div style="display:flex;align-items:center;justify-content:space-between;background:#E8F5E9;border-radius:8px;padding:10px 14px">
+        <div>
+          <div style="font-weight:700;font-size:14px">${u.nome} ${u.role==='owner'?'👑':''}</div>
+          <div style="font-size:12px;color:#8A8A8E">${u.email}</div>
+        </div>
+        ${u.role!=='owner'?`<button onclick="revogarUser('${u.id}')" style="padding:6px 10px;background:#8A8A8E;color:#fff;border:none;border-radius:6px;font-weight:700;font-size:12px;cursor:pointer">REVOGAR</button>`:''}
+      </div>`).join('');
+  }
+}
+
+async function aprovarUser(id) {
+  await sbFetch(`/rest/v1/usuarios?id=eq.${id}`, 'PATCH', { aprovado: true });
+  toast('✅ Usuário aprovado!', 'ok');
+  carregarOwnerScreen();
+}
+
+async function recusarUser(id) {
+  await sbFetch(`/rest/v1/usuarios?id=eq.${id}`, 'DELETE');
+  toast('🗑️ Conta removida', 'ok');
+  carregarOwnerScreen();
+}
+
+async function revogarUser(id) {
+  await sbFetch(`/rest/v1/usuarios?id=eq.${id}`, 'PATCH', { aprovado: false });
+  toast('⚠️ Acesso revogado', 'ok');
+  carregarOwnerScreen();
+}
+
+function fecharOwnerScreen() {
+  document.getElementById('owner-screen').style.display = 'none';
+}
+
+// Verificar sessão existente ao carregar
+async function initAuth() {
+  const { data } = await sbClient.auth.getSession();
+  if (data?.session?.user) {
+    await verificarAcesso(data.session.user);
+  }
+  // Se owner salvo localmente, mostrar botão owner
+  if (localStorage.getItem('pf_owner')) {
+    document.getElementById('secret-area').onclick = null;
+  }
 }
 
 // ═══════════════════════════════════════
