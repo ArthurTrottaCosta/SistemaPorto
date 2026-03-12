@@ -154,6 +154,12 @@ main { max-width:640px; margin:0 auto; padding:20px 14px 60px; }
 .progress-wrap { background:var(--gray5); border-radius:99px; height:6px; margin-bottom:14px; overflow:hidden; }
 .progress-fill { height:100%; background:linear-gradient(90deg, var(--accent), var(--primary)); border-radius:99px; transition:width .4s ease; }
 
+/* ── TOAST ── */
+#toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(100px); background:#1C1C1E; color:#fff; padding:10px 20px; border-radius:10px; font-size:13px; font-weight:600; box-shadow:0 4px 20px rgba(0,0,0,.3); transition:transform .3s ease; z-index:9999; white-space:nowrap; pointer-events:none; }
+#toast.show { transform:translateX(-50%) translateY(0); }
+#toast.ok   { border-left:4px solid #4cd98a; }
+#toast.err  { border-left:4px solid #ff6b6b; }
+
 /* ── EMPTY STATE ── */
 .empty-state { text-align:center; padding:40px 20px; color:var(--gray3); }
 .empty-state .e-icon { font-size:48px; margin-bottom:12px; display:block; }
@@ -162,6 +168,7 @@ main { max-width:640px; margin:0 auto; padding:20px 14px 60px; }
 </head>
 <body>
 
+<div id="toast"></div>
 <div class="header">
   <div class="header-inner">
     <div class="hdr-logo">
@@ -170,6 +177,10 @@ main { max-width:640px; margin:0 auto; padding:20px 14px 60px; }
     <div class="hdr-text">
       <h1 id="hdr-nome">Porto Fortaleza</h1>
       <p>Gerador Automático de Ticket</p>
+    </div>
+    <div style="display:flex;align-items:center;padding:0 12px;gap:6px" id="sb-status-wrap">
+      <span id="sb-dot" style="width:8px;height:8px;border-radius:50%;background:#ffd93d;display:inline-block;flex-shrink:0"></span>
+      <span id="sb-label" style="font-size:10px;color:rgba(255,255,255,.6);letter-spacing:.5px">conectando...</span>
     </div>
     <div class="empresa-switch">
       <button class="empresa-btn active" id="btn-pf" onclick="setEmpresa('PF')">Porto Fortaleza</button>
@@ -251,6 +262,26 @@ main { max-width:640px; margin:0 auto; padding:20px 14px 60px; }
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
 // ═══════════════════════════════════════
+// TOAST
+// ═══════════════════════════════════════
+let toastTimer;
+function toast(msg, tipo='ok') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'show ' + tipo;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.className = '', 3000);
+}
+
+function setSbStatus(status) {
+  const dot   = document.getElementById('sb-dot');
+  const label = document.getElementById('sb-label');
+  if (status === 'ok')      { dot.style.background='#4cd98a'; label.textContent='banco online'; }
+  else if (status === 'err'){ dot.style.background='#ff6b6b'; label.textContent='banco offline'; }
+  else                      { dot.style.background='#ffd93d'; label.textContent='conectando...'; }
+}
+
+// ═══════════════════════════════════════
 // SUPABASE
 // ═══════════════════════════════════════
 const SB_URL = 'https://qckueyfmecurgpjxjvnq.supabase.co';
@@ -331,18 +362,20 @@ async function loadPlates() {
   try {
     const rows = await sbFetch('/rest/v1/caminhoes?select=*&order=placa');
     if (rows && rows.length > 0) {
-      // Supabase tem dados — usar como fonte principal
       plates = {};
       rows.forEach(r => {
         plates[r.placa] = { tara: r.tara, motorista: r.motorista||'', rodizio: r.rodizio||'', sb_id: r.id };
       });
+      setSbStatus('ok');
     } else {
-      // Supabase vazio — popular com os dados base
       await popularSupabaseComBase();
+      setSbStatus('ok');
     }
     renderPlateTable();
   } catch(e) {
-    console.warn('Supabase offline, usando dados locais:', e.message);
+    console.warn('Supabase offline:', e.message);
+    setSbStatus('err');
+    toast('⚠️ Banco offline — usando dados locais', 'err');
   }
 }
 
@@ -382,7 +415,9 @@ function deletePlateRow(btn) {
   tr.remove();
   if (pl) {
     delete plates[pl];
-    sbFetch(`/rest/v1/caminhoes?placa=eq.${pl}`, 'DELETE').catch(e => console.warn('Erro ao deletar:', e.message));
+    sbFetch(`/rest/v1/caminhoes?placa=eq.${pl}`, 'DELETE')
+      .then(() => toast('🗑️ Caminhão removido', 'ok'))
+      .catch(e => toast('❌ Erro ao remover', 'err'));
   }
   notes.forEach(n => { if (n.data?.placa) refreshCalc(n.id); });
 }
@@ -402,7 +437,12 @@ function savePlates() {
   });
   // Salvar no Supabase em background
   if (rows.length > 0) {
-    sbFetch('/rest/v1/caminhoes', 'POST', rows).catch(e => console.warn('Erro ao salvar:', e.message));
+    sbFetch('/rest/v1/caminhoes', 'POST', rows)
+      .then(() => toast('✅ Caminhão salvo para todos!', 'ok'))
+      .catch(e => {
+        console.warn('Erro ao salvar:', e.message);
+        toast('❌ Erro ao salvar no banco', 'err');
+      });
   }
   notes.forEach(n => { if (n.data?.placa) refreshCalc(n.id); });
 }
@@ -444,7 +484,8 @@ async function processQueue() {
       const data   = await extractFromPDF(base64);
       note.data    = data;
       note.status  = 'ready';
-      setCardState(note.id, 'ready', '✅ Pronta para gerar ticket');
+      const tipoLabel = note.data?.tipo_doc === 'PEDIDO' ? '📋 Pedido' : '🧾 NF-e';
+      setCardState(note.id, 'ready', `✅ ${tipoLabel} — pronta para gerar ticket`);
       populateNoteFields(note);
     } catch(err) {
       note.status = 'error';
@@ -483,38 +524,99 @@ async function extrairTextoPDFjs(base64) {
   return content.items.map(i => i.str).join(' ');
 }
 
+// ── Detecta se é Pedido (Brascomm) ou NF-e (DANFE) ──
+function detectarTipo(texto) {
+  if (/BRASCOMM|Controle Interno|PED:/i.test(texto)) return 'PEDIDO';
+  return 'DANFE';
+}
+
+function parsearPEDIDO(texto) {
+  const r = {};
+  // Número do pedido — PED: 53815
+  const mPed = texto.match(/PED[:\s]+(\d{4,6})/);
+  if (mPed) r.numero_nf = mPed[1];
+
+  // Data — Data: 12/03/2026
+  const mData = texto.match(/Data[:\s]+(\d{2}\/\d{2}\/\d{4})/i);
+  if (mData) { const [d,mo,y]=mData[1].split('/'); r.data=y+'-'+mo+'-'+d; }
+
+  // Empresa fornecedora — para autodetectar empresa
+  if (/CR AMBIENTAL/i.test(texto)) r.empresa = 'CR';
+  else if (/PORTO FORTALEZA/i.test(texto)) r.empresa = 'PF';
+
+  // Produto e quantidade — linha: "1  POT  PO DE PEDRA  TON  23,3  76,00  1.770,80"
+  // Padrão: codigo_produto  DESCRIÇÃO  UND  QTDE  PR.UNIT  PR.TOTAL
+  const mProd = texto.match(/\d+\s+[A-Z]{2,5}\s+([A-ZÁÉÍÓÚÂÊÔÃÕÇ][A-ZÁÉÍÓÚÂÊÔÃÕÇ\s]+?)\s+(TON|M3|KG|UN)\s+([\d,]+)\s+[\d,\.]+\s+[\d,\.]+/);
+  if (mProd) {
+    const desc = mProd[1].trim().toUpperCase();
+    const un   = mProd[2];
+    const qtd  = parseFloat(mProd[3].replace(',','.'));
+    r.material      = desc;
+    r.peso_carga_kg = un==='KG' ? Math.round(qtd) : Math.round(qtd*1000);
+  }
+
+  // Placa — pode não ter no pedido, deixar em branco
+  const mPlaca = texto.match(/\b([A-Z]{3}[-\s]?\d[A-Z0-9]\d{2})\b/);
+  r.placa = mPlaca ? mPlaca[1].replace(/[-\s]/g,'') : '';
+
+  return r;
+}
+
 function parsearDANFE(texto) {
   const r = {};
   const mNF = texto.match(/N[\u00ba\u00b0o][:\s]+(\d{3,6})/);
   if (mNF) r.numero_nf = mNF[1];
+
   let mData = texto.match(/Emiss[\u00e3a]o\s+(\d{2}\/\d{2}\/\d{4})/);
   if (!mData) mData = texto.match(/(\d{2}\/\d{2}\/\d{4})/);
   if (mData) { const [d,mo,y]=mData[1].split('/'); r.data=y+'-'+mo+'-'+d; }
+
   const mPlaca = texto.match(/\b([A-Z]{3}[-\s]?\d[A-Z0-9]\d{2})\b/);
   r.placa = mPlaca ? mPlaca[1].replace(/[-\s]/g,'') : null;
+
+  // NF-e: NCM(8dig) + CSO + CFOP + UND + QTD
   const mProd = texto.match(/(\d{7,8})\s+\d{3,4}\s+\d{4}\s+(TON|M3|KG|UN)\s+([\d,]+)/);
   if (mProd) {
     const un  = mProd[2];
     const qtd = parseFloat(mProd[3].replace(',','.'));
     r.peso_carga_kg = un==='KG' ? Math.round(qtd) : Math.round(qtd*1000);
-    const CABECALHOS = new Set(['TOTAL','ICMS','IPI','ALIQ','UNIT','SN','BC','CFOP','NCM','CSO','UNID','QUANT','VALOR','PROD','DESC','DESCRICAO']);
+
+    // Material: palavras antes do NCM, ignorando cabeçalhos
+    const STOP = new Set(['TOTAL','ICMS','IPI','ALIQ','UNIT','SN','BC','CFOP','NCM','CSO',
+                          'UNID','QUANT','VALOR','PROD','DESC','DESCRICAO','ITEM','QTD',
+                          'DISCRIMINACAO','TRIBUTOS','CODIGO','UN','TON','M3','KG']);
     const antes = texto.slice(0, texto.indexOf(mProd[0])).trim().split(/\s+/);
     const mat = [];
     for (let i = antes.length - 1; i >= 0; i--) {
-      const w = antes[i].replace(/[^\w]/g,'');
-      if (CABECALHOS.has(w) || /\d/.test(w)) break;
+      const w = antes[i].replace(/[^\wÀ-ú]/g,'').toUpperCase();
+      if (STOP.has(w) || /^\d+$/.test(w) || w.length === 0) break;
       mat.unshift(antes[i]);
     }
-    if (mat.length > 0 && /^[A-Z]{2,5}$/.test(mat[0])) mat.shift();
-    r.material = mat.join(' ').trim().toUpperCase();
+    // remover código curto no início (ex: "AM", "BC", "POT")
+    while (mat.length > 0 && /^[A-Z]{1,5}$/.test(mat[0].toUpperCase())) mat.shift();
+    r.material = mat.join(' ').trim().toUpperCase() || '—';
   }
+
   return r;
 }
 
 async function extractFromPDF(base64) {
   const texto = await extrairTextoPDFjs(base64);
-  const dados = parsearDANFE(texto);
-  if (!dados.numero_nf) throw new Error('PDF não reconhecido como DANFE válido.');
+  const tipo  = detectarTipo(texto);
+
+  let dados;
+  if (tipo === 'PEDIDO') {
+    dados = parsearPEDIDO(texto);
+    // autodetectar empresa e mudar o switch
+    if (dados.empresa && dados.empresa !== empresa) {
+      setEmpresa(dados.empresa);
+    }
+  } else {
+    dados = parsearDANFE(texto);
+  }
+
+  if (!dados.numero_nf) throw new Error('PDF não reconhecido. Verifique se é uma NF-e ou Pedido Brascomm.');
+  dados.tipo_doc = tipo;
   return dados;
 }
 
@@ -589,7 +691,7 @@ function populateNoteFields(note) {
   document.getElementById(`fields-${note.id}`).innerHTML = `
     <div class="field-group">
       <div class="field">
-        <label>Número da Nota Fiscal</label>
+        <label>${(d.tipo_doc==='PEDIDO') ? 'Número do Pedido' : 'Número da Nota Fiscal'}</label>
         <input type="text" id="f-nf-${note.id}" value="${d.numero_nf||''}" placeholder="—" oninput="syncNote(${note.id})">
       </div>
       <div class="row2">
@@ -759,11 +861,11 @@ async function buildPDF(note) {
     const tmpImg = new Image();
     await new Promise(r => { tmpImg.onload = r; tmpImg.src = logoImg; });
     const aspect = tmpImg.naturalWidth / tmpImg.naturalHeight;
-    // CR é horizontal, PF mais quadrada
-    const maxW = empresa === 'CR' ? 66 : 48;
-    const maxH = empresa === 'CR' ? 18 : 28;
-    let lw = maxW, lh = lw / aspect;
-    if (lh > maxH) { lh = maxH; lw = lh * aspect; }
+    // Área fixa para logo: 60mm largura x 26mm altura — logo se encaixa dentro sem distorcer
+    const areaW = 60, areaH = 26;
+    let lw = areaW, lh = lw / aspect;
+    if (lh > areaH) { lh = areaH; lw = lh * aspect; }
+    if (lw > areaW) { lw = areaW; lh = lw / aspect; }
     doc.addImage(logoImg, 'PNG', cx - lw/2, (34 - lh)/2, lw, lh);
   } catch(e) {
     doc.setFont('helvetica','bold'); doc.setFontSize(22); doc.setTextColor(0,0,0);
@@ -807,12 +909,13 @@ async function buildPDF(note) {
   y += 6;
 
   // ── Dados — TUDO EM NEGRITO ──
+  const tipoPDF  = (note.data?.tipo_doc === 'PEDIDO') ? 'PEDIDO:' : 'NOTA FISCAL:';
   const rows = [
     ['PESO LIQUIDO:', fmtKG(carga)],
     ['TARA:',         fmtKG(tara)],
     ['VEICULO:',      placa],
     ['DATA SAIDA:',   dataFmt],
-    ['NOTA FISCAL:',  nf],
+    [tipoPDF,         nf],
     ['PESO BRUTO:',   fmtKG(bruto)],
   ];
 
