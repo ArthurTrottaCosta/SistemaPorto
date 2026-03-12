@@ -194,11 +194,13 @@ main { max-width:640px; margin:0 auto; padding:20px 14px 60px; }
       <h3>Placa × Tara × Motorista</h3>
       <span id="truck-arrow" style="margin-left:auto;color:rgba(255,255,255,.6);font-size:13px">▼</span>
     </div>
-    <div class="card-body" id="truck-body">
+    <div class="card-body" id="truck-body" style="display:none">
       <table class="tbl">
         <thead><tr><th>Placa</th><th>Tara (KG)</th><th>Motorista</th><th style="width:32px"></th></tr></thead>
         <tbody id="plate-body"></tbody>
       </table>
+    </div>
+    <div class="card-body" style="padding-top:0;padding-bottom:12px">
       <button class="btn-add" onclick="addPlateRow()">＋ Adicionar caminhão</button>
     </div>
   </div>
@@ -874,7 +876,6 @@ function fmtKG(n)   { return (n||0).toLocaleString('pt-BR') + ' KG'; }
 function fmtDate(v) { if(!v) return '—'; const[y,m,d]=v.split('-'); return `${d}/${m}/${y}`; }
 
 // INIT
-document.getElementById('truck-body').style.display = 'none';
 loadPlates();  // async — busca do Supabase
 </script>
 </body>
