@@ -7,9 +7,9 @@
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
 <style>
 :root {
-  --orange:    #F26522;
-  --orange-dk: #C94F0E;
-  --orange-lt: #FFF0E8;
+  --orange:    #2E7D32;
+  --orange-dk: #1B5E20;
+  --orange-lt: #E8F5E9;
   --blue:      #2E7D32;
   --blue-lt:   #E8F5E9;
   --green:     #2E7D32;
@@ -139,8 +139,8 @@ main { max-width:640px; margin:0 auto; padding:20px 14px 60px; }
 .calc-strip { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:8px; }
 .calc-box { border-radius:10px; padding:10px 12px; }
 .calc-box.tara  { background:var(--blue-lt);  border:2px solid #c8d8ef; }
-.calc-box.bruto { background:var(--orange-lt); border:2px solid #f5c9a8; }
-.calc-box.warn  { background:var(--red-lt);   border:2px solid #f5b8b2; }
+.calc-box.bruto { background:var(--orange-lt); border:2px solid #c8e6c9; }
+.calc-box.warn  { background:var(--red-lt);   border:2px solid #ffcdd2; }
 .calc-box .lbl  { font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:10px; letter-spacing:2px; text-transform:uppercase; }
 .calc-box.tara  .lbl { color:var(--blue); }
 .calc-box.bruto .lbl { color:var(--orange-dk); }
@@ -158,7 +158,7 @@ main { max-width:640px; margin:0 auto; padding:20px 14px 60px; }
 
 /* PROGRESS BAR */
 .progress-wrap { background:var(--gray5); border-radius:99px; height:6px; margin-bottom:14px; overflow:hidden; }
-.progress-fill { height:100%; background:linear-gradient(90deg, var(--orange), var(--green)); border-radius:99px; transition:width .4s ease; }
+.progress-fill { height:100%; background:linear-gradient(90deg, #43A047, #1B5E20); border-radius:99px; transition:width .4s ease; }
 
 /* EMPTY STATE */
 .empty-state { text-align:center; padding:40px 20px; color:var(--gray3); }
@@ -659,7 +659,24 @@ function updateQueueBar() {
 // ══════════════════════════════════
 // PDF GENERATION
 // ══════════════════════════════════
-function buildPDF(note) {
+// Carrega imagem local como base64 para o jsPDF
+function loadImageAsBase64(src) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width  = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+      canvas.getContext('2d').drawImage(img, 0, 0);
+      resolve(canvas.toDataURL('image/png'));
+    };
+    img.onerror = reject;
+    img.src = src;
+  });
+}
+
+async function buildPDF(note) {
   const { jsPDF } = window.jspdf;
   syncNote(note.id);
   const d     = note.data || {};
@@ -677,22 +694,27 @@ function buildPDF(note) {
   const cx  = W / 2;
   let y     = 0;
 
-  // Blue header bg
+  // Header verde
   doc.setFillColor(27, 94, 32);
-  doc.rect(0, 0, W, 30, 'F');
-  // Orange left accent
-  doc.setFillColor(242, 101, 34);
-  doc.rect(0, 0, 8, 30, 'F');
+  doc.rect(0, 0, W, 34, 'F');
 
-  doc.setFont('helvetica','bold');
-  doc.setFontSize(24);
-  doc.setTextColor(255,255,255);
-  doc.text('PF', cx+4, 16, { align:'center' });
-  doc.setFontSize(7);
-  doc.setTextColor(180,230,180);
-  doc.text('PORTO FORTALEZA', cx+4, 24, { align:'center' });
+  // Logo no header — carrega de logo.png
+  try {
+    const logoImg = await loadImageAsBase64('logo.png');
+    // Logo centralizada no header, altura 24mm
+    doc.addImage(logoImg, 'PNG', cx - 16, 3, 32, 28);
+  } catch(e) {
+    // Fallback texto se logo não carregar
+    doc.setFont('helvetica','bold');
+    doc.setFontSize(22);
+    doc.setTextColor(255,255,255);
+    doc.text('PF', cx, 16, { align:'center' });
+    doc.setFontSize(7);
+    doc.setTextColor(180,230,180);
+    doc.text('PORTO FORTALEZA', cx, 26, { align:'center' });
+  }
 
-  y = 36;
+  y = 40;
   doc.setFont('helvetica','bold');
   doc.setFontSize(8);
   doc.setTextColor(25,25,25);
@@ -710,7 +732,7 @@ function buildPDF(note) {
   y += 6;
 
   // Orange title bar
-  doc.setFillColor(242,101,34);
+  doc.setFillColor(46,125,50);
   doc.roundedRect(8, y-4, W-16, 10, 2, 2, 'F');
   doc.setFont('helvetica','bold');
   doc.setFontSize(9);
@@ -759,13 +781,13 @@ function buildPDF(note) {
   doc.setTextColor(100,100,100);
   doc.text('CERTIFICADO DE PESAGEM INMETRO', cx, y, { align:'center' });
 
-  return { doc, filename: `ticket_nf${nf}_${placa}.pdf` };
+  return { doc, filename: `ticket da NF${nf} ${placa}.pdf` };
 }
 
 function generateOne(id) {
   const note = notes.find(n => n.id === id);
   if (!note) return;
-  const { doc, filename } = buildPDF(note);
+  const { doc, filename } = await buildPDF(note);
   doc.save(filename);
   note.ticketDone = true;
   setCardState(id, 'done', '🎟️ Ticket gerado! ' + filename);
