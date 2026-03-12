@@ -183,29 +183,7 @@ main { max-width:640px; margin:0 auto; padding:20px 14px 60px; }
 
 <main>
 
-  <!-- ══ CAMINHÕES ══ -->
-  <div class="sec-head">
-    <div class="sec-icon blue">🚛</div>
-    <div class="sec-head-text">
-      <h2>Cadastro de Caminhões</h2>
-      <p>Cadastre uma vez — salvo automaticamente neste aparelho</p>
-    </div>
-  </div>
-  <div class="card" id="truck-card">
-    <div class="card-head blue" style="cursor:pointer" onclick="toggleTrucks()">
-      <span class="icon">📋</span>
-      <h3>Tabela de Placa × Tara</h3>
-      <span id="truck-arrow" style="margin-left:auto;color:rgba(255,255,255,.6);font-size:13px">▼</span>
-    </div>
-    <div class="card-body" id="truck-body">
-      <p class="hint-text">Cadastre cada caminhão uma vez. Ao lançar a NF, a tara aparece automaticamente pela placa.</p>
-      <table class="tbl">
-        <thead><tr><th>Placa</th><th>Tara (KG)</th><th>Motorista</th><th style="width:38px"></th></tr></thead>
-        <tbody id="plate-body"></tbody>
-      </table>
-      <button class="btn-add" onclick="addPlateRow()">＋ Adicionar caminhão</button>
-    </div>
-  </div>
+
 
   <!-- ══ UPLOAD ══ -->
   <div class="sec-head" style="margin-top:10px">
@@ -297,7 +275,7 @@ function savePlates() {
 }
 
 // Dados base das placas (vêm da planilha oficial)
-const PLACAS_BASE = {"EZZ7J49": {"tara": 11420, "motorista": "JOSE EDMILSON"}, "GEC2D25": {"tara": 10600, "motorista": "SEVERINO (BIU)"}, "STR7J73": {"tara": 9550, "motorista": "THIAGO"}, "FCQ0152": {"tara": 9600, "motorista": "ANDERSON"}, "TIV6G18": {"tara": 9600, "motorista": "HAMILTON"}, "TLL2G96": {"tara": 9500, "motorista": "GLEIDSON"}, "TIU4E58": {"tara": 9600, "motorista": "JONATHAN"}, "FPB7C07": {"tara": 9600, "motorista": "NIVALDO"}, "FXU8A25": {"tara": 9400, "motorista": "RENATO"}, "FIK1H91": {"tara": 9550, "motorista": ""}, "TIP8E27": {"tara": 10000, "motorista": "CARLOS"}, "DZF7590": {"tara": 10000, "motorista": "BOLSA"}, "BXH7A70": {"tara": 9800, "motorista": "CARLINHOS"}, "BXB6894": {"tara": 10200, "motorista": "CARNEIRO"}, "GUD6E90": {"tara": 9500, "motorista": "COELHO"}, "BXC8I45": {"tara": 10200, "motorista": "DIGÃO"}, "CYY7I36": {"tara": 8500, "motorista": "DIGÃO (GUSTAVO)"}, "GSV9C25": {"tara": 11000, "motorista": "FABIANO"}, "NGL0I99": {"tara": 9400, "motorista": "GABRIEL"}, "DQG0H87": {"tara": 10000, "motorista": "GUGA"}, "CYR8B37": {"tara": 8000, "motorista": "GUILHERME NOBREGA"}, "BTR9B45": {"tara": 17000, "motorista": "JAIR (CAIO)"}, "DIL6624": {"tara": 11000, "motorista": "LEANDRO"}, "GXS9C71": {"tara": 11200, "motorista": "LINO"}, "CVD6E90": {"tara": 13400, "motorista": "MARCIO FRETE"}, "BNB9G51": {"tara": 13400, "motorista": "MARCIO FRETE (LINGUIÇA)"}, "EGT1F53": {"tara": 12500, "motorista": "MARCIO RAMIRO"}, "FOC6B31": {"tara": 16400, "motorista": "PAI DO GABRIEL (ANTONIO)"}, "CLK1369": {"tara": 9100, "motorista": "PASQUALE"}, "GLG6420": {"tara": 17200, "motorista": "PEPO CARRETA"}, "ELW6443": {"tara": 17800, "motorista": "PEPO CARRETA"}, "CLK0J02": {"tara": 17300, "motorista": "PEPO CARRETA"}, "CPJ8F49": {"tara": 17000, "motorista": "PEPO CARRETA"}, "HOA1J74": {"tara": 11500, "motorista": "PEPO TRUCK"}, "DTA3094": {"tara": 9000, "motorista": "RATO (LINO)"}, "CHR2H80": {"tara": 8700, "motorista": "ROBSON"}, "KPE5A19": {"tara": 13000, "motorista": "RODRIGO TADEU"}, "CCT5G38": {"tara": 8600, "motorista": "THIAGO FRETADO"}, "BWA1F44": {"tara": 8000, "motorista": "THIAGO FRETADO 2"}, "DIC0I12": {"tara": 9200, "motorista": "TRADIÇÃO"}, "EFU6091": {"tara": 11200, "motorista": "WANDER"}, "CGS0E97": {"tara": 11200, "motorista": "WANDER"}, "GSB9C25": {"tara": 10000, "motorista": "FABIANO (JACARÉ)"}, "ANN0H43": {"tara": 11000, "motorista": "RAFAEL (BRUNO)"}, "EYD8D69": {"tara": 9270, "motorista": "RAFAEL (MARIO)"}, "BUS2G53": {"tara": 10000, "motorista": "RAFAEL (MONCAIO)"}, "ELP1C24": {"tara": 8900, "motorista": "RAFAEL (THIAGO)"}, "CXA6C28": {"tara": 8100, "motorista": "RAFAEL (VINÍCIUS)"}, "NWC3F59": {"tara": 9500, "motorista": "RAFAEL (LEONARDO)"}, "ANF2H12": {"tara": 13000, "motorista": "FABIO JUNHO"}, "SUM3I13": {"tara": 12000, "motorista": "RODRIGUINHO FRET"}, "CXC5B83": {"tara": 10000, "motorista": "SAULO"}, "JBR2F09": {"tara": 11000, "motorista": "SAULO"}, "DPC2J00": {"tara": 10000, "motorista": "SAULO"}, "JVR3J09": {"tara": 12000, "motorista": "SAULO"}, "ENG1B12": {"tara": 11900, "motorista": "SAULO"}, "MQA5E32": {"tara": 11000, "motorista": "LUIS"}, "ETC0C23": {"tara": 11000, "motorista": "LUIS"}, "DPB3B26": {"tara": 11700, "motorista": "ASSUEIRO"}, "EFU7H34": {"tara": 12200, "motorista": "ASSUEIRO"}, "BXF5E04": {"tara": 12200, "motorista": "MARCIO FRETE"}, "GZH2E91": {"tara": 11800, "motorista": "MARCIO FRETE"}};
+const PLACAS_BASE = {"EZZ7J49": {"tara": 11420, "motorista": "JOSE EDMILSON", "rodizio": "SEXTA"}, "GEC2D25": {"tara": 10600, "motorista": "SEVERINO (BIU)", "rodizio": "QUARTA"}, "STR7J73": {"tara": 9550, "motorista": "THIAGO", "rodizio": "SEGUNDA"}, "FCQ0152": {"tara": 9600, "motorista": "ANDERSON", "rodizio": "QUARTA"}, "TIV6G18": {"tara": 9600, "motorista": "HAMILTON", "rodizio": "QUINTA"}, "TLL2G96": {"tara": 9500, "motorista": "GLEIDSON", "rodizio": "TERÇA"}, "TIU4E58": {"tara": 9600, "motorista": "JONATHAN", "rodizio": "QUINTA"}, "FPB7C07": {"tara": 9600, "motorista": "NIVALDO", "rodizio": "QUINTA"}, "FXU8A25": {"tara": 9400, "motorista": "RENATO", "rodizio": "QUARTA"}, "FIK1H91": {"tara": 9550, "motorista": "", "rodizio": "SEGUNDA"}, "TIP8E27": {"tara": 10000, "motorista": "CARLOS", "rodizio": "TERÇA"}, "DZF7590": {"tara": 10000, "motorista": "BOLSA", "rodizio": "FRETADO"}, "BXH7A70": {"tara": 9800, "motorista": "CARLINHOS", "rodizio": "FRETADO"}, "BXB6894": {"tara": 10200, "motorista": "CARNEIRO", "rodizio": "FRETADO"}, "GUD6E90": {"tara": 9500, "motorista": "COELHO", "rodizio": "FRETADO"}, "BXC8I45": {"tara": 10200, "motorista": "DIGÃO", "rodizio": "FRETADO"}, "CYY7I36": {"tara": 8500, "motorista": "DIGÃO (GUSTAVO)", "rodizio": "FRETADO"}, "GSV9C25": {"tara": 11000, "motorista": "FABIANO", "rodizio": "FRETADO"}, "NGL0I99": {"tara": 9400, "motorista": "GABRIEL", "rodizio": "FRETADO"}, "DQG0H87": {"tara": 10000, "motorista": "GUGA", "rodizio": "FRETADO"}, "CYR8B37": {"tara": 8000, "motorista": "GUILHERME NOBREGA", "rodizio": "FRETADO"}, "BTR9B45": {"tara": 17000, "motorista": "JAIR (CAIO)", "rodizio": "FRETADO"}, "DIL6624": {"tara": 11000, "motorista": "LEANDRO", "rodizio": "FRETADO"}, "GXS9C71": {"tara": 11200, "motorista": "LINO", "rodizio": "FRETADO"}, "CVD6E90": {"tara": 13400, "motorista": "MARCIO FRETE", "rodizio": "FRETADO"}, "BNB9G51": {"tara": 13400, "motorista": "MARCIO FRETE (LINGUIÇA)", "rodizio": "FRETADO"}, "EGT1F53": {"tara": 12500, "motorista": "MARCIO RAMIRO", "rodizio": "FRETADO"}, "FOC6B31": {"tara": 16400, "motorista": "PAI DO GABRIEL (ANTONIO)", "rodizio": "FRETADO"}, "CLK1369": {"tara": 9100, "motorista": "PASQUALE", "rodizio": "FRETADO"}, "GLG6420": {"tara": 17200, "motorista": "PEPO CARRETA", "rodizio": "FRETADO"}, "ELW6443": {"tara": 17800, "motorista": "PEPO CARRETA", "rodizio": "FRETADO"}, "CLK0J02": {"tara": 17300, "motorista": "PEPO CARRETA", "rodizio": "FRETADO"}, "CPJ8F49": {"tara": 17000, "motorista": "PEPO CARRETA", "rodizio": "FRETADO"}, "HOA1J74": {"tara": 11500, "motorista": "PEPO TRUCK", "rodizio": "FRETADO"}, "DTA3094": {"tara": 9000, "motorista": "RATO (LINO)", "rodizio": "FRETADO"}, "CHR2H80": {"tara": 8700, "motorista": "ROBSON", "rodizio": "FRETADO"}, "KPE5A19": {"tara": 13000, "motorista": "RODRIGO TADEU", "rodizio": "FRETADO"}, "CCT5G38": {"tara": 8600, "motorista": "THIAGO FRETADO", "rodizio": "FRETADO"}, "BWA1F44": {"tara": 8000, "motorista": "THIAGO FRETADO 2", "rodizio": "FRETADO"}, "DIC0I12": {"tara": 9200, "motorista": "TRADIÇÃO", "rodizio": "FRETADO"}, "EFU6091": {"tara": 11200, "motorista": "WANDER", "rodizio": "FRETADO"}, "CGS0E97": {"tara": 11200, "motorista": "WANDER", "rodizio": "FRETADO"}, "GSB9C25": {"tara": 10000, "motorista": "FABIANO (JACARÉ)", "rodizio": "SEXTA"}, "ANN0H43": {"tara": 11000, "motorista": "RAFAEL (BRUNO)", "rodizio": "TERÇA"}, "EYD8D69": {"tara": 9270, "motorista": "RAFAEL (MARIO)", "rodizio": "SEXTA"}, "BUS2G53": {"tara": 10000, "motorista": "RAFAEL (MONCAIO)", "rodizio": "QUARTA"}, "ELP1C24": {"tara": 8900, "motorista": "RAFAEL (THIAGO)", "rodizio": "TERÇA"}, "CXA6C28": {"tara": 8100, "motorista": "RAFAEL (VINÍCIUS)", "rodizio": "QUINTA"}, "NWC3F59": {"tara": 9500, "motorista": "RAFAEL (LEONARDO)", "rodizio": "SEXTA"}, "ANF2H12": {"tara": 13000, "motorista": "FABIO JUNHO", "rodizio": "SEGUNDA"}, "SUM3I13": {"tara": 12000, "motorista": "RODRIGUINHO FRET", "rodizio": "TERÇA"}, "CXC5B83": {"tara": 10000, "motorista": "SAULO", "rodizio": "TERÇA"}, "JBR2F09": {"tara": 11000, "motorista": "SAULO", "rodizio": "SEXTA"}, "DPC2J00": {"tara": 10000, "motorista": "SAULO", "rodizio": ""}, "JVR3J09": {"tara": 12000, "motorista": "SAULO", "rodizio": ""}, "ENG1B12": {"tara": 11900, "motorista": "SAULO", "rodizio": ""}, "MQA5E32": {"tara": 11000, "motorista": "LUIS", "rodizio": ""}, "ETC0C23": {"tara": 11000, "motorista": "LUIS", "rodizio": ""}, "DPB3B26": {"tara": 11700, "motorista": "ASSUEIRO", "rodizio": ""}, "EFU7H34": {"tara": 12200, "motorista": "ASSUEIRO", "rodizio": ""}, "BXF5E04": {"tara": 12200, "motorista": "MARCIO FRETE", "rodizio": ""}, "GZH2E91": {"tara": 11800, "motorista": "MARCIO FRETE", "rodizio": ""}};
 
 function loadPlates() {
   // Começa com dados da planilha oficial
@@ -315,12 +293,6 @@ function loadPlates() {
     const mot  = typeof info === 'object' ? (info.motorista || '') : '';
     addPlateRow(pl, tara, mot);
   });
-  return;
-  const tbody = document.getElementById('plate-body');
-  tbody.innerHTML = '';
-  const entries = Object.entries(plates);
-  if (entries.length === 0) { addPlateRow(); return; }
-  entries.forEach(([pl, ta]) => addPlateRow(pl, ta));
 }
 
 function addPlateRow(plate='', tara='', motorista='') {
@@ -528,14 +500,32 @@ function setCardState(id, state, subtitle) {
 function populateNoteFields(note) {
   const d   = note.data || {};
   const pl  = (d.placa || '').toUpperCase().replace(/[^A-Z0-9]/g,'');
-  const ta  = plates[pl];
+  const info = plates[pl];
+  const ta  = info ? (typeof info === 'object' ? info.tara : info) : undefined;
   const ca  = d.peso_carga_kg || 0;
+
+  const mot = info && typeof info === 'object' ? info.motorista : '';
+  const rod = info && typeof info === 'object' ? info.rodizio   : '';
+  const rodCores = {SEGUNDA:'#3b82f6',TERÇA:'#8b5cf6',QUARTA:'#f59e0b',QUINTA:'#10b981',SEXTA:'#ef4444',FRETADO:'#6b7280'};
+  const rodCor = rodCores[rod] || 'var(--gray3)';
 
   const taraHtml = ta !== undefined
     ? `<div class="calc-box tara" id="box-tara-${note.id}"><span class="lbl">Tara do Caminhão</span><span class="val" id="val-tara-${note.id}">${fmtKG(ta)}</span></div>
        <div class="calc-box bruto"><span class="lbl">Peso Bruto</span><span class="val" id="val-bruto-${note.id}">${fmtKG(ca + ta)}</span></div>`
     : `<div class="calc-box warn" id="box-tara-${note.id}"><span class="lbl">Tara do Caminhão</span><span class="val" id="val-tara-${note.id}">${pl ? 'Não cadastrada' : '—'}</span></div>
        <div class="calc-box bruto"><span class="lbl">Peso Bruto</span><span class="val" id="val-bruto-${note.id}">—</span></div>`;
+
+  const motorHtml = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px">
+      <div style="background:var(--bg);border-radius:8px;padding:8px 12px">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--gray3)">Motorista</div>
+        <div style="font-weight:600;font-size:13px;margin-top:2px" id="val-mot-${note.id}">${mot || '—'}</div>
+      </div>
+      <div style="background:var(--bg);border-radius:8px;padding:8px 12px">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--gray3)">Rodízio</div>
+        <div style="font-weight:700;font-size:13px;margin-top:2px;color:${rodCor}" id="val-rod-${note.id}">${rod || '—'}</div>
+      </div>
+    </div>`;
 
   document.getElementById(`fields-${note.id}`).innerHTML = `
     <div class="field-group">
@@ -563,6 +553,7 @@ function populateNoteFields(note) {
       </div>
     </div>
     <div class="calc-strip">${taraHtml}</div>
+    ${motorHtml}
     <div class="note-actions">
       <button class="btn-ticket" id="btn-ticket-${note.id}" onclick="generateOne(${note.id})">🖨 GERAR TICKET</button>
       <button class="btn-remove" onclick="removeNote(${note.id})" title="Remover">🗑</button>
@@ -582,10 +573,16 @@ function refreshCalc(id) {
 
   const pl    = (document.getElementById(`f-placa-${id}`)?.value || '').toUpperCase().replace(/[^A-Z0-9]/g,'');
   const ca    = parseInt(document.getElementById(`f-carga-${id}`)?.value) || 0;
-  const _raw  = plates[pl]; const ta = _raw ? (typeof _raw === 'object' ? _raw.tara : _raw) : undefined;
+  const info  = plates[pl];
+  const ta    = info ? (typeof info === 'object' ? info.tara    : info)  : undefined;
+  const mot   = info && typeof info === 'object' ? info.motorista : '';
+  const rod   = info && typeof info === 'object' ? info.rodizio   : '';
+
   const boxEl = document.getElementById(`box-tara-${id}`);
   const taEl  = document.getElementById(`val-tara-${id}`);
   const brEl  = document.getElementById(`val-bruto-${id}`);
+  const motEl = document.getElementById(`val-mot-${id}`);
+  const rodEl = document.getElementById(`val-rod-${id}`);
 
   if (!taEl || !brEl) return;
 
@@ -593,10 +590,18 @@ function refreshCalc(id) {
     if (boxEl) boxEl.className = 'calc-box tara';
     taEl.textContent = fmtKG(ta);
     brEl.textContent = fmtKG(ca + ta);
+    if (motEl) motEl.textContent = mot || '—';
+    if (rodEl) {
+      const cores = {SEGUNDA:'#3b82f6',TERÇA:'#8b5cf6',QUARTA:'#f59e0b',QUINTA:'#10b981',SEXTA:'#ef4444',FRETADO:'#6b7280'};
+      rodEl.textContent = rod || '—';
+      rodEl.style.color = cores[rod] || 'var(--gray2)';
+    }
   } else {
     if (boxEl) boxEl.className = pl ? 'calc-box warn' : 'calc-box tara';
     taEl.textContent = pl ? 'Não cadastrada' : '—';
     brEl.textContent = '—';
+    if (motEl) motEl.textContent = '—';
+    if (rodEl) { rodEl.textContent = '—'; rodEl.style.color = 'var(--gray3)'; }
   }
   syncNote(id);
 }
