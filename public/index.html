@@ -374,8 +374,6 @@ function addPlateRow(plate='', tara='', motorista='', rodizio='') {
     <td><button onclick="deletePlateRow(this)" style="background:none;border:none;color:#C0392B;cursor:pointer;font-size:18px;padding:2px 6px">×</button></td>
   `;
   document.getElementById('plate-body').appendChild(tr);
-  // Abrir tabela automaticamente ao adicionar
-  if (!trucksOpen) { trucksOpen = true; document.getElementById('truck-body').style.display = ''; document.getElementById('truck-arrow').textContent = '▼'; }
 }
 
 function deletePlateRow(btn) {
@@ -761,8 +759,12 @@ async function buildPDF(note) {
     const tmpImg = new Image();
     await new Promise(r => { tmpImg.onload = r; tmpImg.src = logoImg; });
     const aspect = tmpImg.naturalWidth / tmpImg.naturalHeight;
-    const lh = 30, lw = Math.min(lh * aspect, 68);
-    doc.addImage(logoImg, 'PNG', cx - lw/2, 4, lw, lh);
+    // CR é horizontal, PF mais quadrada
+    const maxW = empresa === 'CR' ? 66 : 48;
+    const maxH = empresa === 'CR' ? 18 : 28;
+    let lw = maxW, lh = lw / aspect;
+    if (lh > maxH) { lh = maxH; lw = lh * aspect; }
+    doc.addImage(logoImg, 'PNG', cx - lw/2, (34 - lh)/2, lw, lh);
   } catch(e) {
     doc.setFont('helvetica','bold'); doc.setFontSize(22); doc.setTextColor(0,0,0);
     doc.text(emp.nome.substring(0,2).toUpperCase(), cx, 18, { align:'center' });
