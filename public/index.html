@@ -168,65 +168,79 @@ main { max-width:640px; margin:0 auto; padding:20px 14px 60px; }
 </head>
 <body>
 
-<!-- ══ TELA DE LOGIN (sobrepõe tudo) ══ -->
-<div id="auth-screen" style="position:fixed;inset:0;background:#1B5E20;z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px">
-  <div style="background:#fff;border-radius:16px;width:100%;max-width:380px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.4)">
-    
-    <!-- Logo no topo -->
-    <div style="background:#1B5E20;padding:24px;text-align:center">
-      <img id="login-logo" src="logo.png" style="height:60px;object-fit:contain">
+<!-- ══ TELA DE LOGIN ══ -->
+<div id="auth-screen" style="position:fixed;inset:0;background:#F7F7F7;z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px">
+  <div style="background:#fff;border-radius:16px;width:100%;max-width:340px;box-shadow:0 4px 24px rgba(0,0,0,.08);overflow:hidden">
+
+    <!-- Logo -->
+    <div style="padding:28px 24px 16px;text-align:center">
+      <img id="login-logo" src="logo.png" style="height:52px;object-fit:contain">
     </div>
 
-    <!-- Tabs Login / Cadastro -->
-    <div style="display:flex;border-bottom:2px solid #E8F5E9">
-      <button onclick="showTab('login')" id="tab-login" style="flex:1;padding:12px;border:none;background:#fff;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:15px;letter-spacing:1px;cursor:pointer;color:#1B5E20;border-bottom:3px solid #1B5E20;margin-bottom:-2px">ENTRAR</button>
-      <button onclick="showTab('cadastro')" id="tab-cadastro" style="flex:1;padding:12px;border:none;background:#fff;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:15px;letter-spacing:1px;cursor:pointer;color:#8A8A8E;border-bottom:3px solid transparent;margin-bottom:-2px">CADASTRAR</button>
+    <!-- Tabs — pill style neutro -->
+    <div style="display:flex;background:#F0F0F0;margin:0 20px 20px;border-radius:8px;padding:3px">
+      <button onclick="showTab('login')" id="tab-login"
+        style="flex:1;padding:7px;border:none;border-radius:6px;background:#fff;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:13px;letter-spacing:.8px;cursor:pointer;color:#1C1C1E;box-shadow:0 1px 3px rgba(0,0,0,.1)">
+        ENTRAR
+      </button>
+      <button onclick="showTab('cadastro')" id="tab-cadastro"
+        style="flex:1;padding:7px;border:none;border-radius:6px;background:transparent;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:13px;letter-spacing:.8px;cursor:pointer;color:#8A8A8E">
+        CADASTRAR
+      </button>
     </div>
 
-    <div style="padding:24px">
+    <div style="padding:0 20px 24px">
 
-      <!-- FORM LOGIN -->
+      <!-- LOGIN -->
       <div id="form-login">
-        <div style="margin-bottom:12px">
-          <label style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:11px;letter-spacing:2px;color:#8A8A8E;display:block;margin-bottom:4px">EMAIL</label>
-          <input id="login-email" type="email" placeholder="seu@email.com" style="width:100%;padding:10px 12px;border:2px solid #E8E8EC;border-radius:8px;font-size:15px;outline:none;font-family:'Barlow',sans-serif" onfocus="this.style.borderColor='#2E7D32'" onblur="this.style.borderColor='#E8E8EC'">
-        </div>
-        <div style="margin-bottom:16px">
-          <label style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:11px;letter-spacing:2px;color:#8A8A8E;display:block;margin-bottom:4px">SENHA</label>
-          <input id="login-senha" type="password" placeholder="••••••••" style="width:100%;padding:10px 12px;border:2px solid #E8E8EC;border-radius:8px;font-size:15px;outline:none;font-family:'Barlow',sans-serif" onfocus="this.style.borderColor='#2E7D32'" onblur="this.style.borderColor='#E8E8EC'" onkeydown="if(event.key==='Enter')loginUser()">
-        </div>
-        <button onclick="loginUser()" style="width:100%;padding:13px;background:#1B5E20;color:#fff;border:none;border-radius:9px;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:17px;letter-spacing:1px;cursor:pointer">ENTRAR</button>
-        <div id="login-erro" style="color:#C0392B;font-size:13px;text-align:center;margin-top:10px;display:none"></div>
+        <input id="login-email" type="email" placeholder="Email"
+          style="width:100%;padding:11px 13px;border:1.5px solid #E5E5E5;border-radius:9px;font-size:14px;outline:none;margin-bottom:9px;box-sizing:border-box;color:#1C1C1E"
+          onfocus="this.style.borderColor='#555'" onblur="this.style.borderColor='#E5E5E5'">
+        <input id="login-senha" type="password" placeholder="Senha"
+          style="width:100%;padding:11px 13px;border:1.5px solid #E5E5E5;border-radius:9px;font-size:14px;outline:none;margin-bottom:14px;box-sizing:border-box;color:#1C1C1E"
+          onfocus="this.style.borderColor='#555'" onblur="this.style.borderColor='#E5E5E5'"
+          onkeydown="if(event.key==='Enter')loginUser()">
+        <button onclick="loginUser()"
+          style="width:100%;padding:12px;background:#1C1C1E;color:#fff;border:none;border-radius:9px;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:15px;letter-spacing:1px;cursor:pointer">
+          ENTRAR
+        </button>
+        <div id="login-erro" style="color:#C0392B;font-size:12px;text-align:center;margin-top:9px;display:none"></div>
       </div>
 
-      <!-- FORM CADASTRO -->
+      <!-- CADASTRO -->
       <div id="form-cadastro" style="display:none">
-        <div style="margin-bottom:12px">
-          <label style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:11px;letter-spacing:2px;color:#8A8A8E;display:block;margin-bottom:4px">NOME</label>
-          <input id="cad-nome" type="text" placeholder="Seu nome" style="width:100%;padding:10px 12px;border:2px solid #E8E8EC;border-radius:8px;font-size:15px;outline:none;font-family:'Barlow',sans-serif" onfocus="this.style.borderColor='#2E7D32'" onblur="this.style.borderColor='#E8E8EC'">
+        <input id="cad-nome" type="text" placeholder="Seu nome"
+          style="width:100%;padding:11px 13px;border:1.5px solid #E5E5E5;border-radius:9px;font-size:14px;outline:none;margin-bottom:9px;box-sizing:border-box;color:#1C1C1E"
+          onfocus="this.style.borderColor='#555'" onblur="this.style.borderColor='#E5E5E5'">
+        <input id="cad-email" type="email" placeholder="Email"
+          style="width:100%;padding:11px 13px;border:1.5px solid #E5E5E5;border-radius:9px;font-size:14px;outline:none;margin-bottom:9px;box-sizing:border-box;color:#1C1C1E"
+          onfocus="this.style.borderColor='#555'" onblur="this.style.borderColor='#E5E5E5'">
+        <input id="cad-senha" type="password" placeholder="Senha (mín. 6 caracteres)"
+          style="width:100%;padding:11px 13px;border:1.5px solid #E5E5E5;border-radius:9px;font-size:14px;outline:none;margin-bottom:14px;box-sizing:border-box;color:#1C1C1E"
+          onfocus="this.style.borderColor='#555'" onblur="this.style.borderColor='#E5E5E5'">
+        <button onclick="cadastrarUser()"
+          style="width:100%;padding:12px;background:#1C1C1E;color:#fff;border:none;border-radius:9px;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:15px;letter-spacing:1px;cursor:pointer">
+          SOLICITAR ACESSO
+        </button>
+        <div id="cad-erro" style="color:#C0392B;font-size:12px;text-align:center;margin-top:9px;display:none"></div>
+        <div id="cad-ok" style="color:#2E7D32;font-size:12px;text-align:center;margin-top:9px;display:none;line-height:1.5">
+          ✅ Solicitação enviada!<br>Aguarde aprovação do administrador.
         </div>
-        <div style="margin-bottom:12px">
-          <label style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:11px;letter-spacing:2px;color:#8A8A8E;display:block;margin-bottom:4px">EMAIL</label>
-          <input id="cad-email" type="email" placeholder="seu@email.com" style="width:100%;padding:10px 12px;border:2px solid #E8E8EC;border-radius:8px;font-size:15px;outline:none;font-family:'Barlow',sans-serif" onfocus="this.style.borderColor='#2E7D32'" onblur="this.style.borderColor='#E8E8EC'">
-        </div>
-        <div style="margin-bottom:16px">
-          <label style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:11px;letter-spacing:2px;color:#8A8A8E;display:block;margin-bottom:4px">SENHA</label>
-          <input id="cad-senha" type="password" placeholder="mínimo 6 caracteres" style="width:100%;padding:10px 12px;border:2px solid #E8E8EC;border-radius:8px;font-size:15px;outline:none;font-family:'Barlow',sans-serif" onfocus="this.style.borderColor='#2E7D32'" onblur="this.style.borderColor='#E8E8EC'">
-        </div>
-        <button onclick="cadastrarUser()" style="width:100%;padding:13px;background:#1B5E20;color:#fff;border:none;border-radius:9px;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:17px;letter-spacing:1px;cursor:pointer">SOLICITAR ACESSO</button>
-        <div id="cad-erro" style="color:#C0392B;font-size:13px;text-align:center;margin-top:10px;display:none"></div>
-        <div id="cad-ok" style="color:#2E7D32;font-size:13px;text-align:center;margin-top:10px;display:none">✅ Cadastro enviado! Aguarde aprovação do administrador.</div>
       </div>
 
-      <!-- Botão secreto dono — invisível, aparece ao clicar 7x no rodapé -->
-      <div id="secret-area" onclick="secretClick()" style="height:20px;cursor:default;margin-top:8px"></div>
-      <div id="owner-panel" style="display:none;margin-top:12px;border-top:1px solid #E8E8EC;padding-top:12px">
-        <label style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:11px;letter-spacing:2px;color:#8A8A8E;display:block;margin-bottom:4px">CHAVE DO ADMINISTRADOR</label>
-        <div style="display:flex;gap:8px">
-          <input id="owner-key" type="password" placeholder="chave secreta" style="flex:1;padding:10px 12px;border:2px solid #E8E8EC;border-radius:8px;font-size:14px;outline:none" onkeydown="if(event.key==='Enter')verificarChave()">
-          <button onclick="verificarChave()" style="padding:10px 14px;background:#1B5E20;color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer">OK</button>
+      <!-- Área secreta — 7 cliques revelam campo de chave -->
+      <div id="secret-area" onclick="secretClick()" style="height:14px;margin-top:4px"></div>
+      <div id="owner-panel" style="display:none;margin-top:8px;padding-top:10px;border-top:1px solid #F0F0F0">
+        <div style="display:flex;gap:7px">
+          <input id="owner-key" type="password" placeholder="Chave do administrador"
+            style="flex:1;padding:9px 11px;border:1.5px solid #E5E5E5;border-radius:8px;font-size:13px;outline:none"
+            onkeydown="if(event.key==='Enter')verificarChave()">
+          <button onclick="verificarChave()"
+            style="padding:9px 13px;background:#1C1C1E;color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:13px">
+            OK
+          </button>
         </div>
-        <div id="owner-erro" style="color:#C0392B;font-size:12px;margin-top:6px;display:none"></div>
+        <div id="owner-erro" style="color:#C0392B;font-size:11px;margin-top:4px;display:none"></div>
       </div>
 
     </div>
@@ -507,8 +521,7 @@ async function verificarAcesso(user) {
 
 function entrarNoSistema() {
   document.getElementById('auth-screen').style.display = 'none';
-  // Mostrar nome do usuário no header
-  const nome = currentUserData?.nome || currentUser?.email || '';
+  const nome    = currentUserData?.nome || currentUser?.email || '';
   const isOwner = currentUserData?.role === 'owner';
   document.getElementById('hdr-user').textContent = nome;
   if (isOwner) document.getElementById('btn-owner').style.display = 'flex';
@@ -575,17 +588,6 @@ function fecharOwnerScreen() {
   document.getElementById('owner-screen').style.display = 'none';
 }
 
-// Verificar sessão existente ao carregar
-async function initAuth() {
-  const { data } = await sbClient.auth.getSession();
-  if (data?.session?.user) {
-    await verificarAcesso(data.session.user);
-  }
-  // Se owner salvo localmente, mostrar botão owner
-  if (localStorage.getItem('pf_owner')) {
-    document.getElementById('secret-area').onclick = null;
-  }
-}
 
 // ═══════════════════════════════════════
 // EMPRESA  (PF = Porto Fortaleza | CR = CR Ambiental)
@@ -1264,8 +1266,27 @@ async function generateAll() {
 function fmtKG(n)   { return (n||0).toLocaleString('pt-BR') + ' KG'; }
 function fmtDate(v) { if(!v) return '—'; const[y,m,d]=v.split('-'); return `${d}/${m}/${y}`; }
 
+// ═══════════════════════════════════════
+// LOGOUT
+// ═══════════════════════════════════════
+async function logoutUser() {
+  await sbClient.auth.signOut();
+  currentUser = null;
+  currentUserData = null;
+  document.getElementById('auth-screen').style.display = 'flex';
+  document.getElementById('hdr-user').textContent = '';
+  document.getElementById('btn-owner').style.display = 'none';
+}
+
 // INIT
-loadPlates();  // async — busca do Supabase
+document.getElementById('truck-body').style.display = 'none';
+(async () => {
+  const { data } = await sbClient.auth.getSession();
+  if (data?.session?.user) {
+    await verificarAcesso(data.session.user);
+  }
+  // Se não há sessão, a tela de login já está visível
+})();
 </script>
 </body>
 </html>
