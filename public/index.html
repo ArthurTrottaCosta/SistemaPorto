@@ -564,10 +564,24 @@ function parsearDANFE(txt){
   const mP=txt.match(/(\d{7,8})\s+\d{3,4}\s+\d{4}\s+(TON|M3|KG|UN)\s+([\d,]+)/);
   if(mP){
     r.peso_carga_kg=mP[2]==='KG'?Math.round(parseFloat(mP[3].replace(',','.'))):Math.round(parseFloat(mP[3].replace(',','.'))*1000);
-    const STOP=new Set(['TOTAL','ICMS','IPI','CFOP','NCM','CSO','UNID','QUANT','VALOR','PROD','DESC','ITEM','QTD','PLACA','NF','EMISSAO','FORNECEDOR','DESTINATARIO','NOTA','FISCAL']);
-    const linhas=txt.slice(0,txt.indexOf(mP[0])).split('\n');let mat='—';
-    for(let i=linhas.length-1;i>=0;i--){const ln=linhas[i].trim();if(!ln||ln.length<4||/\d/.test(ln))continue;if(ln.toUpperCase().split(/\s+/).some(w=>STOP.has(w)))continue;mat=ln.toUpperCase();break;}
-    r.material=mat;
+
+    // Estratégia 1: descrição está na mesma linha antes do NCM
+    // Padrão: CÓD  DESCRIÇÃO  NCM(8dig)  CSO  CFOP  UND  QTD...
+    // Ex: "AMT AREIA MEDIA LAVADA 25051000 0102 5102 TON 19,96..."
+    const mInline = txt.match(/([A-ZÁÉÍÓÚÂÊÔÃÕÇ][A-ZÁÉÍÓÚÂÊÔÃÕÇ\s]{3,}?)\s+\d{8}\s+\d{3,4}\s+\d{4}\s+(TON|M3|KG|UN)/i);
+    if(mInline){
+      // remove possível código de produto no início (ex: "AMT ")
+      let desc = mInline[1].trim();
+      // se começa com código curto (2-4 letras maiúsculas) seguido de espaço, remove
+      desc = desc.replace(/^[A-Z]{2,5}\s+/, '');
+      r.material = desc.toUpperCase();
+    } else {
+      // Estratégia 2: varrer linhas antes do NCM (quando há quebras de linha reais)
+      const STOP=new Set(['TOTAL','ICMS','IPI','CFOP','NCM','CSO','UNID','QUANT','VALOR','PROD','DESC','ITEM','QTD','PLACA','NF','EMISSAO','FORNECEDOR','DESTINATARIO','NOTA','FISCAL']);
+      const linhas=txt.slice(0,txt.indexOf(mP[0])).split('\n');let mat='—';
+      for(let i=linhas.length-1;i>=0;i--){const ln=linhas[i].trim();if(!ln||ln.length<4||/\d/.test(ln))continue;if(ln.toUpperCase().split(/\s+/).some(w=>STOP.has(w)))continue;mat=ln.toUpperCase();break;}
+      r.material=mat;
+    }
   }
   return r;
 }
