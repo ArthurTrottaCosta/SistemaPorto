@@ -31,7 +31,7 @@ body { background:var(--bg); color:var(--gray1); font-family:'Barlow',sans-serif
 .header { background:var(--primary); position:sticky; top:0; z-index:200; box-shadow:0 3px 16px rgba(0,0,0,.30); }
 .header-inner { display:flex; align-items:stretch; max-width:640px; margin:0 auto; }
 .hdr-logo { background:#fff; display:flex; align-items:center; justify-content:center; padding:8px 14px; min-width:90px; }
-.hdr-logo img { height:52px; width:auto; display:block; }
+.hdr-logo img { height:64px; width:auto; display:block; }
 .hdr-text  { padding:12px 16px; display:flex; flex-direction:column; justify-content:center; flex:1; }
 .hdr-text h1 { font-family:'Barlow Condensed',sans-serif; font-weight:800; font-size:20px; color:#fff; letter-spacing:.5px; line-height:1; }
 .hdr-text p  { font-size:11px; color:rgba(255,255,255,.55); letter-spacing:1.5px; text-transform:uppercase; margin-top:3px; }
@@ -249,6 +249,28 @@ main { max-width:640px; margin:0 auto; padding:20px 14px 60px; }
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
 // ═══════════════════════════════════════
+// SUPABASE
+// ═══════════════════════════════════════
+const SB_URL = 'https://qckueyfmecurgpjxjvnq.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFja3VleWZtZWN1cmdwanhqdm5xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzMjM0OTcsImV4cCI6MjA4ODg5OTQ5N30.ELGEBinPf3T2oiaLtmHhnZ-LZOaE_ZBL5YvKMYafPWU';
+
+async function sbFetch(path, method='GET', body=null) {
+  const opts = {
+    method,
+    headers: {
+      'apikey': SB_KEY,
+      'Authorization': 'Bearer ' + SB_KEY,
+      'Content-Type': 'application/json',
+      'Prefer': method==='POST' ? 'resolution=merge-duplicates,return=minimal' : ''
+    }
+  };
+  if (body) opts.body = JSON.stringify(body);
+  const r = await fetch(SB_URL + path, opts);
+  if (!r.ok) throw new Error('Supabase: ' + r.status);
+  return method === 'GET' ? r.json() : null;
+}
+
+// ═══════════════════════════════════════
 // EMPRESA  (PF = Porto Fortaleza | CR = CR Ambiental)
 // ═══════════════════════════════════════
 const EMPRESAS = {
@@ -299,13 +321,35 @@ function toggleTrucks() {
   document.getElementById('truck-arrow').textContent  = trucksOpen ? '▼' : '▶';
 }
 
-function loadPlates() {
+async function loadPlates() {
+  // Começa com dados embutidos enquanto carrega
   plates = Object.assign({}, PLACAS_BASE);
-  try {
-    const local = JSON.parse(localStorage.getItem('pf_plates') || '{}');
-    Object.assign(plates, local);
-  } catch {}
   renderPlateTable();
+
+  try {
+    const rows = await sbFetch('/rest/v1/caminhoes?select=*&order=placa');
+    if (rows && rows.length > 0) {
+      // Supabase tem dados — usar como fonte principal
+      plates = {};
+      rows.forEach(r => {
+        plates[r.placa] = { tara: r.tara, motorista: r.motorista||'', rodizio: r.rodizio||'', sb_id: r.id };
+      });
+    } else {
+      // Supabase vazio — popular com os dados base
+      await popularSupabaseComBase();
+    }
+    renderPlateTable();
+  } catch(e) {
+    console.warn('Supabase offline, usando dados locais:', e.message);
+  }
+}
+
+async function popularSupabaseComBase() {
+  const rows = Object.entries(PLACAS_BASE).map(([placa, info]) => ({
+    placa, tara: info.tara, motorista: info.motorista||'', rodizio: info.rodizio||''
+  }));
+  await sbFetch('/rest/v1/caminhoes', 'POST', rows);
+  console.log('Supabase populado com', rows.length, 'placas!');
 }
 
 function renderPlateTable() {
@@ -325,15 +369,26 @@ function addPlateRow(plate='', tara='', motorista='', rodizio='') {
     <td><input type="text" value="${plate}" placeholder="ABC1D23" oninput="savePlates()"></td>
     <td><input type="number" value="${tara}" placeholder="10000" oninput="savePlates()"></td>
     <td><input type="text" value="${motorista}" placeholder="Nome" oninput="savePlates()" style="text-transform:none"></td>
-    <td><button onclick="this.closest('tr').remove();savePlates()" style="background:none;border:none;color:#C0392B;cursor:pointer;font-size:18px;padding:2px 6px">×</button></td>
+    <td><button onclick="deletePlateRow(this)" style="background:none;border:none;color:#C0392B;cursor:pointer;font-size:18px;padding:2px 6px">×</button></td>
   `;
   document.getElementById('plate-body').appendChild(tr);
   // Abrir tabela automaticamente ao adicionar
   if (!trucksOpen) { trucksOpen = true; document.getElementById('truck-body').style.display = ''; document.getElementById('truck-arrow').textContent = '▼'; }
 }
 
+function deletePlateRow(btn) {
+  const tr  = btn.closest('tr');
+  const pl  = tr.querySelectorAll('input')[0].value.trim().toUpperCase().replace(/[^A-Z0-9]/g,'');
+  tr.remove();
+  if (pl) {
+    delete plates[pl];
+    sbFetch(`/rest/v1/caminhoes?placa=eq.${pl}`, 'DELETE').catch(e => console.warn('Erro ao deletar:', e.message));
+  }
+  notes.forEach(n => { if (n.data?.placa) refreshCalc(n.id); });
+}
+
 function savePlates() {
-  const local = {};
+  const rows = [];
   document.querySelectorAll('#plate-body tr').forEach(r => {
     const inp = r.querySelectorAll('input');
     const pl  = inp[0].value.trim().toUpperCase().replace(/[^A-Z0-9]/g,'');
@@ -342,10 +397,13 @@ function savePlates() {
     if (pl) {
       const info = PLACAS_BASE[pl] || {};
       plates[pl] = { tara: ta, motorista: mot, rodizio: info.rodizio || '' };
-      if (!PLACAS_BASE[pl]) local[pl] = plates[pl];
+      rows.push({ placa: pl, tara: ta, motorista: mot, rodizio: info.rodizio||'' });
     }
   });
-  try { localStorage.setItem('pf_plates', JSON.stringify(local)); } catch {}
+  // Salvar no Supabase em background
+  if (rows.length > 0) {
+    sbFetch('/rest/v1/caminhoes', 'POST', rows).catch(e => console.warn('Erro ao salvar:', e.message));
+  }
   notes.forEach(n => { if (n.data?.placa) refreshCalc(n.id); });
 }
 
@@ -695,20 +753,20 @@ async function buildPDF(note) {
   doc.setLineDash([]);
   doc.line(0, 0, W, 0);
 
-  // ── Logo ──
+  // ── Logo maior ──
   try {
     const logoImg = await loadImageAsBase64(emp.logo);
     const tmpImg = new Image();
     await new Promise(r => { tmpImg.onload = r; tmpImg.src = logoImg; });
     const aspect = tmpImg.naturalWidth / tmpImg.naturalHeight;
-    const lh = 22, lw = Math.min(lh * aspect, 55);
+    const lh = 30, lw = Math.min(lh * aspect, 68);
     doc.addImage(logoImg, 'PNG', cx - lw/2, 4, lw, lh);
   } catch(e) {
     doc.setFont('helvetica','bold'); doc.setFontSize(22); doc.setTextColor(0,0,0);
-    doc.text(emp.nome.substring(0,2).toUpperCase(), cx, 16, { align:'center' });
+    doc.text(emp.nome.substring(0,2).toUpperCase(), cx, 18, { align:'center' });
   }
 
-  y = 30;
+  y = 38;
 
   // ── Nome da empresa ──
   doc.setFont('helvetica','bold');
@@ -731,15 +789,12 @@ async function buildPDF(note) {
   doc.line(4, y, W-4, y);
   y += 6;
 
-  // ── Título TICKET DE PESAGEM — borda preta ──
-  doc.setDrawColor(0,0,0);
-  doc.setLineWidth(0.6);
-  doc.roundedRect(8, y-4, W-16, 10, 2, 2, 'S');
+  // ── Título TICKET DE PESAGEM — sem moldura ──
   doc.setFont('helvetica','bold');
-  doc.setFontSize(9);
+  doc.setFontSize(10);
   doc.setTextColor(0,0,0);
   doc.text('TICKET DE PESAGEM', cx, y+3, { align:'center' });
-  y += 13;
+  y += 10;
 
   doc.setDrawColor(0,0,0);
   doc.setLineWidth(0.4);
@@ -820,7 +875,7 @@ function fmtDate(v) { if(!v) return '—'; const[y,m,d]=v.split('-'); return `${
 
 // INIT
 document.getElementById('truck-body').style.display = 'none';
-loadPlates();
+loadPlates();  // async — busca do Supabase
 </script>
 </body>
 </html>
