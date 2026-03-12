@@ -784,7 +784,7 @@ async function buildPDF(note) {
   return { doc, filename: `ticket da NF${nf} ${placa}.pdf` };
 }
 
-function generateOne(id) {
+async function generateOne(id) {
   const note = notes.find(n => n.id === id);
   if (!note) return;
   const { doc, filename } = await buildPDF(note);
@@ -796,9 +796,9 @@ function generateOne(id) {
   updateQueueBar();
 }
 
-function generateAll() {
+async function generateAll() {
   const ready = notes.filter(n => n.status === 'ready' && !n.ticketDone);
-  ready.forEach(note => generateOne(note.id));
+  for (const note of ready) { await generateOne(note.id); }
 }
 
 // ══════════════════════════════════
