@@ -18,8 +18,8 @@ body{background:var(--bg);color:var(--g1);font-family:'Barlow',sans-serif;font-s
 /* HEADER */
 .header{background:var(--green);position:sticky;top:0;z-index:200;box-shadow:0 3px 16px rgba(0,0,0,.30)}
 .header-inner{display:flex;align-items:stretch;max-width:640px;margin:0 auto}
-.hdr-logo{background:#fff;display:flex;align-items:center;justify-content:center;padding:8px 14px;min-width:90px}
-.hdr-logo img{height:64px;width:auto;display:block}
+.hdr-logo{background:#fff;display:flex;align-items:center;justify-content:center;padding:6px 10px;min-width:70px;max-width:80px}
+.hdr-logo img{height:52px;width:auto;max-width:70px;object-fit:contain;display:block}
 .hdr-text{padding:12px 16px;display:flex;flex-direction:column;justify-content:center;flex:1}
 .hdr-text h1{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:20px;color:#fff;letter-spacing:.5px;line-height:1}
 .hdr-text p{font-size:11px;color:rgba(255,255,255,.55);letter-spacing:1.5px;text-transform:uppercase;margin-top:3px}
@@ -230,30 +230,79 @@ main{max-width:640px;margin:0 auto;padding:20px 14px 60px}
 
 <main>
 
-  <div class="sec-head">
-    <div class="sec-icon">🚛</div>
-    <div class="sec-head-text">
-      <h2>Caminhões Cadastrados</h2>
-      <p>Digite a placa — tara e motorista preenchem automaticamente</p>
+  <!-- MODAL NOVO CAMINHÃO -->
+  <div id="modal-truck" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9000;align-items:center;justify-content:center;padding:20px">
+    <div style="background:#fff;border-radius:16px;width:100%;max-width:360px;box-shadow:0 20px 60px rgba(0,0,0,.3);overflow:hidden">
+      <div style="background:#1B5E20;padding:14px 18px;display:flex;align-items:center;justify-content:space-between">
+        <span style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:17px;color:#fff;letter-spacing:1px">🚛 NOVO CAMINHÃO</span>
+        <button onclick="fecharModalTruck()" style="background:rgba(255,255,255,.2);border:none;color:#fff;border-radius:6px;padding:3px 10px;cursor:pointer;font-size:16px">✕</button>
+      </div>
+      <div style="padding:18px;display:flex;flex-direction:column;gap:10px">
+        <div class="field"><label>Placa</label><input id="nt-placa" type="text" placeholder="ABC1D23" style="background:transparent;border:none;color:var(--g1);font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:700;width:100%;outline:none;text-transform:uppercase"></div>
+        <div class="field"><label>Tara (KG)</label><input id="nt-tara" type="number" placeholder="10000" style="background:transparent;border:none;color:var(--g1);font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:700;width:100%;outline:none"></div>
+        <div class="field"><label>Motorista</label><input id="nt-mot" type="text" placeholder="Nome do motorista" style="background:transparent;border:none;color:var(--g1);font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:700;width:100%;outline:none"></div>
+        <div class="field"><label>Rodízio</label>
+          <select id="nt-rod" style="background:transparent;border:none;color:var(--g1);font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:700;width:100%;outline:none">
+            <option value="">— Sem rodízio —</option>
+            <option value="SEGUNDA">SEGUNDA</option><option value="TERÇA">TERÇA</option>
+            <option value="QUARTA">QUARTA</option><option value="QUINTA">QUINTA</option>
+            <option value="SEXTA">SEXTA</option><option value="FRETADO">FRETADO</option>
+          </select>
+        </div>
+        <div id="nt-erro" style="color:#C0392B;font-size:12px;display:none"></div>
+        <button onclick="salvarNovoCaminhao()" id="nt-btn" style="padding:13px;background:#1B5E20;color:#fff;border:none;border-radius:9px;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:17px;letter-spacing:1px;cursor:pointer;margin-top:2px">SALVAR CAMINHÃO</button>
+      </div>
     </div>
   </div>
-  <div class="card">
-    <div class="card-head" style="cursor:pointer" onclick="toggleTrucks()">
-      <span class="icon">📋</span><h3>Placa × Tara × Motorista</h3>
-      <span id="truck-arrow" style="margin-left:auto;color:rgba(255,255,255,.6);font-size:13px">▶</span>
-    </div>
-    <div class="card-body" id="truck-body" style="display:none">
-      <table class="tbl">
-        <thead><tr><th>Placa</th><th>Tara (KG)</th><th>Motorista</th><th style="width:32px"></th></tr></thead>
-        <tbody id="plate-body"></tbody>
-      </table>
-    </div>
-    <div class="card-body" style="padding-top:0;padding-bottom:12px">
-      <button class="btn-add" onclick="addPlateRow()">＋ Adicionar caminhão</button>
+
+  <!-- MODAL EDITAR CAMINHÃO -->
+  <div id="modal-edit-truck" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9000;align-items:center;justify-content:center;padding:20px">
+    <div style="background:#fff;border-radius:16px;width:100%;max-width:360px;box-shadow:0 20px 60px rgba(0,0,0,.3);overflow:hidden">
+      <div style="background:#2E7D32;padding:14px 18px;display:flex;align-items:center;justify-content:space-between">
+        <span style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:17px;color:#fff;letter-spacing:1px">✏️ EDITAR CAMINHÃO</span>
+        <button onclick="fecharModalEdit()" style="background:rgba(255,255,255,.2);border:none;color:#fff;border-radius:6px;padding:3px 10px;cursor:pointer;font-size:16px">✕</button>
+      </div>
+      <div style="padding:18px;display:flex;flex-direction:column;gap:10px">
+        <div class="field" style="background:#f0f0f0;border-color:#ddd"><label>Placa</label><div id="et-placa" style="font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:700;color:#555"></div></div>
+        <div class="field"><label>Tara (KG)</label><input id="et-tara" type="number" placeholder="10000" style="background:transparent;border:none;color:var(--g1);font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:700;width:100%;outline:none"></div>
+        <div class="field"><label>Motorista</label><input id="et-mot" type="text" placeholder="Nome do motorista" style="background:transparent;border:none;color:var(--g1);font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:700;width:100%;outline:none"></div>
+        <div class="field"><label>Rodízio</label>
+          <select id="et-rod" style="background:transparent;border:none;color:var(--g1);font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:700;width:100%;outline:none">
+            <option value="">— Sem rodízio —</option>
+            <option value="SEGUNDA">SEGUNDA</option><option value="TERÇA">TERÇA</option>
+            <option value="QUARTA">QUARTA</option><option value="QUINTA">QUINTA</option>
+            <option value="SEXTA">SEXTA</option><option value="FRETADO">FRETADO</option>
+          </select>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:2px">
+          <button onclick="salvarEdicaoCaminhao()" style="flex:1;padding:13px;background:#1B5E20;color:#fff;border:none;border-radius:9px;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:16px;letter-spacing:1px;cursor:pointer">SALVAR</button>
+          <button onclick="deletarCaminhaoEdit()" style="padding:13px 16px;background:transparent;border:2px solid #C0392B;color:#C0392B;border-radius:9px;font-size:18px;cursor:pointer">🗑</button>
+        </div>
+      </div>
     </div>
   </div>
 
   <div class="sec-head">
+    <div class="sec-icon">🚛</div>
+    <div class="sec-head-text">
+      <h2>Caminhões Cadastrados</h2>
+      <p>Toque em um caminhão para editar</p>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-head" style="cursor:pointer" onclick="toggleTrucks()">
+      <span class="icon">📋</span><h3 id="truck-count">Caminhões</h3>
+      <span id="truck-arrow" style="margin-left:auto;color:rgba(255,255,255,.6);font-size:13px">▶</span>
+    </div>
+    <div id="truck-body" style="display:none">
+      <div id="plate-list" style="padding:8px 12px;display:flex;flex-direction:column;gap:4px"></div>
+    </div>
+    <div style="padding:10px 16px 14px">
+      <button onclick="abrirModalTruck()" style="width:100%;padding:11px;background:#1B5E20;color:#fff;border:none;border-radius:9px;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:16px;letter-spacing:1px;cursor:pointer">＋ ADICIONAR CAMINHÃO</button>
+    </div>
+  </div>
+
+    <div class="sec-head">
     <div class="sec-icon">📄</div>
     <div class="sec-head-text">
       <h2>NF-e / Pedidos em PDF</h2>
@@ -470,42 +519,123 @@ function setEmpresa(e){
 let plates={}, notes=[], noteId=0, trucksOpen=false;
 const PLACAS_BASE={"EZZ7J49":{"tara":11420,"motorista":"JOSE EDMILSON","rodizio":"SEXTA"},"GEC2D25":{"tara":10600,"motorista":"SEVERINO (BIU)","rodizio":"QUARTA"},"STR7J73":{"tara":9550,"motorista":"THIAGO","rodizio":"SEGUNDA"},"FCQ0152":{"tara":9600,"motorista":"ANDERSON","rodizio":"QUARTA"},"TIV6G18":{"tara":9600,"motorista":"HAMILTON","rodizio":"QUINTA"},"TLL2G96":{"tara":9500,"motorista":"GLEIDSON","rodizio":"TERÇA"},"TIU4E58":{"tara":9600,"motorista":"JONATHAN","rodizio":"QUINTA"},"FPB7C07":{"tara":9600,"motorista":"NIVALDO","rodizio":"QUINTA"},"FXU8A25":{"tara":9400,"motorista":"RENATO","rodizio":"QUARTA"},"FIK1H91":{"tara":9550,"motorista":"","rodizio":"SEGUNDA"},"TIP8E27":{"tara":10000,"motorista":"CARLOS","rodizio":"TERÇA"},"DZF7590":{"tara":10000,"motorista":"BOLSA","rodizio":"FRETADO"},"BXH7A70":{"tara":9800,"motorista":"CARLINHOS","rodizio":"FRETADO"},"BXB6894":{"tara":10200,"motorista":"CARNEIRO","rodizio":"FRETADO"},"GUD6E90":{"tara":9500,"motorista":"COELHO","rodizio":"FRETADO"},"BXC8I45":{"tara":10200,"motorista":"DIGÃO","rodizio":"FRETADO"},"CYY7I36":{"tara":8500,"motorista":"DIGÃO (GUSTAVO)","rodizio":"FRETADO"},"GSV9C25":{"tara":11000,"motorista":"FABIANO","rodizio":"FRETADO"},"NGL0I99":{"tara":9400,"motorista":"GABRIEL","rodizio":"FRETADO"},"DQG0H87":{"tara":10000,"motorista":"GUGA","rodizio":"FRETADO"},"CYR8B37":{"tara":8000,"motorista":"GUILHERME NOBREGA","rodizio":"FRETADO"},"BTR9B45":{"tara":17000,"motorista":"JAIR (CAIO)","rodizio":"FRETADO"},"DIL6624":{"tara":11000,"motorista":"LEANDRO","rodizio":"FRETADO"},"GXS9C71":{"tara":11200,"motorista":"LINO","rodizio":"FRETADO"},"CVD6E90":{"tara":13400,"motorista":"MARCIO FRETE","rodizio":"FRETADO"},"BNB9G51":{"tara":13400,"motorista":"MARCIO FRETE (LINGUIÇA)","rodizio":"FRETADO"},"EGT1F53":{"tara":12500,"motorista":"MARCIO RAMIRO","rodizio":"FRETADO"},"FOC6B31":{"tara":16400,"motorista":"PAI DO GABRIEL (ANTONIO)","rodizio":"FRETADO"},"CLK1369":{"tara":9100,"motorista":"PASQUALE","rodizio":"FRETADO"},"GLG6420":{"tara":17200,"motorista":"PEPO CARRETA","rodizio":"FRETADO"},"ELW6443":{"tara":17800,"motorista":"PEPO CARRETA","rodizio":"FRETADO"},"CLK0J02":{"tara":17300,"motorista":"PEPO CARRETA","rodizio":"FRETADO"},"CPJ8F49":{"tara":17000,"motorista":"PEPO CARRETA","rodizio":"FRETADO"},"HOA1J74":{"tara":11500,"motorista":"PEPO TRUCK","rodizio":"FRETADO"},"DTA3094":{"tara":9000,"motorista":"RATO (LINO)","rodizio":"FRETADO"},"CHR2H80":{"tara":8700,"motorista":"ROBSON","rodizio":"FRETADO"},"KPE5A19":{"tara":13000,"motorista":"RODRIGO TADEU","rodizio":"FRETADO"},"CCT5G38":{"tara":8600,"motorista":"THIAGO FRETADO","rodizio":"FRETADO"},"BWA1F44":{"tara":8000,"motorista":"THIAGO FRETADO 2","rodizio":"FRETADO"},"DIC0I12":{"tara":9200,"motorista":"TRADIÇÃO","rodizio":"FRETADO"},"EFU6091":{"tara":11200,"motorista":"WANDER","rodizio":"FRETADO"},"CGS0E97":{"tara":11200,"motorista":"WANDER","rodizio":"FRETADO"},"GSB9C25":{"tara":10000,"motorista":"FABIANO (JACARÉ)","rodizio":"SEXTA"},"ANN0H43":{"tara":11000,"motorista":"RAFAEL (BRUNO)","rodizio":"TERÇA"},"EYD8D69":{"tara":9270,"motorista":"RAFAEL (MARIO)","rodizio":"SEXTA"},"BUS2G53":{"tara":10000,"motorista":"RAFAEL (MONCAIO)","rodizio":"QUARTA"},"ELP1C24":{"tara":8900,"motorista":"RAFAEL (THIAGO)","rodizio":"TERÇA"},"CXA6C28":{"tara":8100,"motorista":"RAFAEL (VINÍCIUS)","rodizio":"QUINTA"},"NWC3F59":{"tara":9500,"motorista":"RAFAEL (LEONARDO)","rodizio":"SEXTA"},"ANF2H12":{"tara":13000,"motorista":"FABIO JUNHO","rodizio":"SEGUNDA"},"SUM3I13":{"tara":12000,"motorista":"RODRIGUINHO FRET","rodizio":"TERÇA"},"CXC5B83":{"tara":10000,"motorista":"SAULO","rodizio":"TERÇA"},"JBR2F09":{"tara":11000,"motorista":"SAULO","rodizio":"SEXTA"},"DPC2J00":{"tara":10000,"motorista":"SAULO","rodizio":""},"JVR3J09":{"tara":12000,"motorista":"SAULO","rodizio":""},"ENG1B12":{"tara":11900,"motorista":"SAULO","rodizio":""},"MQA5E32":{"tara":11000,"motorista":"LUIS","rodizio":""},"ETC0C23":{"tara":11000,"motorista":"LUIS","rodizio":""},"DPB3B26":{"tara":11700,"motorista":"ASSUEIRO","rodizio":""},"EFU7H34":{"tara":12200,"motorista":"ASSUEIRO","rodizio":""},"BXF5E04":{"tara":12200,"motorista":"MARCIO FRETE","rodizio":""},"GZH2E91":{"tara":11800,"motorista":"MARCIO FRETE","rodizio":""}};
 
-function toggleTrucks(){trucksOpen=!trucksOpen;document.getElementById('truck-body').style.display=trucksOpen?'':'none';document.getElementById('truck-arrow').textContent=trucksOpen?'▼':'▶';}
+function toggleTrucks(){
+  trucksOpen=!trucksOpen;
+  document.getElementById('truck-body').style.display=trucksOpen?'':'none';
+  document.getElementById('truck-arrow').textContent=trucksOpen?'▼':'▶';
+}
 
 async function loadPlates(){
-  plates=Object.assign({},PLACAS_BASE); renderPlateTable();
+  plates=Object.assign({},PLACAS_BASE); renderPlateList();
   try {
     const rows=await sbFetch('/rest/v1/caminhoes?select=*&order=placa');
-    if(rows&&rows.length>0){plates={};rows.forEach(r=>{plates[r.placa]={tara:r.tara,motorista:r.motorista||'',rodizio:r.rodizio||''};});}
-    else {const bulk=Object.entries(PLACAS_BASE).map(([p,i])=>({placa:p,tara:i.tara,motorista:i.motorista||'',rodizio:i.rodizio||''}));await sbFetch('/rest/v1/caminhoes','POST',bulk);}
-    renderPlateTable();
-  } catch(e){toast('⚠️ Banco offline — dados locais','err');}
+    if(rows&&rows.length>0){
+      plates={};
+      rows.forEach(r=>{plates[r.placa]={tara:r.tara,motorista:r.motorista||'',rodizio:r.rodizio||''};});
+    } else {
+      const bulk=Object.entries(PLACAS_BASE).map(([p,i])=>({placa:p,tara:i.tara,motorista:i.motorista||'',rodizio:i.rodizio||''}));
+      await sbFetch('/rest/v1/caminhoes','POST',bulk);
+    }
+    renderPlateList();
+  } catch(e){ toast('⚠️ Banco offline — dados locais','err'); }
 }
 
-function renderPlateTable(){const tb=document.getElementById('plate-body');tb.innerHTML='';Object.entries(plates).forEach(([p,i])=>addPlateRow(p,i.tara,i.motorista||'',i.rodizio||''));}
+const ROD_COR_BADGE={SEGUNDA:'#3b82f6',TERÇA:'#8b5cf6',QUARTA:'#f59e0b',QUINTA:'#10b981',SEXTA:'#ef4444',FRETADO:'#6b7280'};
 
-function addPlateRow(plate='',tara='',motorista='',rodizio=''){
-  const tr=document.createElement('tr');
-  tr.innerHTML=`<td><input type="text" value="${plate}" placeholder="ABC1D23" oninput="savePlates()"></td><td><input type="number" value="${tara}" placeholder="10000" oninput="savePlates()"></td><td><input type="text" value="${motorista}" placeholder="Nome" oninput="savePlates()" style="text-transform:none"></td><td><button onclick="deletePlateRow(this)" style="background:none;border:none;color:#C0392B;cursor:pointer;font-size:18px;padding:2px 6px">×</button></td>`;
-  document.getElementById('plate-body').appendChild(tr);
+function renderPlateList(){
+  const list=document.getElementById('plate-list');
+  const count=Object.keys(plates).length;
+  document.getElementById('truck-count').textContent=`${count} Caminhão${count!==1?'s':''} Cadastrado${count!==1?'s':''}`;
+  list.innerHTML='';
+  Object.entries(plates).sort((a,b)=>a[0].localeCompare(b[0])).forEach(([pl,i])=>{
+    const rod=i.rodizio||'';
+    const cor=ROD_COR_BADGE[rod]||'#8A8A8E';
+    const div=document.createElement('div');
+    div.style.cssText='display:flex;align-items:center;justify-content:space-between;padding:10px 6px;border-bottom:1px solid #F0F0F0;cursor:pointer';
+    div.innerHTML=`
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:14px;color:#1C1C1E">${pl}</span>
+        ${rod?`<span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;background:${cor}22;color:${cor};font-family:'Barlow Condensed',sans-serif;letter-spacing:.5px">${rod}</span>`:''}
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:12px;color:#3A3A3C;font-weight:600">${i.motorista||'—'}</div>
+        <div style="font-size:11px;color:#8A8A8E">${(i.tara||0).toLocaleString('pt-BR')} KG</div>
+      </div>`;
+    div.onclick=()=>abrirModalEdit(pl);
+    list.appendChild(div);
+  });
 }
 
-function deletePlateRow(btn){
-  const tr=btn.closest('tr'), pl=tr.querySelectorAll('input')[0].value.trim().toUpperCase().replace(/[^A-Z0-9]/g,'');
-  tr.remove(); if(pl){delete plates[pl];sbFetch(`/rest/v1/caminhoes?placa=eq.${pl}`,'DELETE').then(()=>toast('🗑️ Caminhão removido','ok')).catch(()=>toast('❌ Erro ao remover','err'));}
+// ── MODAL NOVO CAMINHÃO ──
+function abrirModalTruck(){
+  document.getElementById('nt-placa').value='';
+  document.getElementById('nt-tara').value='';
+  document.getElementById('nt-mot').value='';
+  document.getElementById('nt-rod').value='';
+  document.getElementById('nt-erro').style.display='none';
+  document.getElementById('modal-truck').style.display='flex';
+  setTimeout(()=>document.getElementById('nt-placa').focus(),100);
+}
+function fecharModalTruck(){ document.getElementById('modal-truck').style.display='none'; }
+
+async function salvarNovoCaminhao(){
+  const pl=document.getElementById('nt-placa').value.trim().toUpperCase().replace(/[^A-Z0-9]/g,'');
+  const ta=parseInt(document.getElementById('nt-tara').value)||0;
+  const mot=document.getElementById('nt-mot').value.trim();
+  const rod=document.getElementById('nt-rod').value;
+  const err=document.getElementById('nt-erro');
+  if(!pl||pl.length<6){ err.textContent='Placa inválida (ex: ABC1D23)'; err.style.display='block'; return; }
+  if(!ta){ err.textContent='Informe a tara do caminhão'; err.style.display='block'; return; }
+  const btn=document.getElementById('nt-btn');
+  btn.textContent='Salvando…'; btn.disabled=true;
+  try {
+    await sbFetch('/rest/v1/caminhoes','POST',[{placa:pl,tara:ta,motorista:mot,rodizio:rod}]);
+    plates[pl]={tara:ta,motorista:mot,rodizio:rod};
+    renderPlateList();
+    fecharModalTruck();
+    toast('✅ Caminhão salvo para todos!','ok');
+  } catch(e){
+    err.textContent='Erro ao salvar. Tente novamente.'; err.style.display='block';
+  }
+  btn.textContent='SALVAR CAMINHÃO'; btn.disabled=false;
 }
 
-let _svT;
-function savePlates(){
-  clearTimeout(_svT); _svT=setTimeout(async()=>{
-    const rows=[];
-    document.querySelectorAll('#plate-body tr').forEach(r=>{
-      const inp=r.querySelectorAll('input'), pl=inp[0].value.trim().toUpperCase().replace(/[^A-Z0-9]/g,''), ta=parseInt(inp[1].value)||0, mot=inp[2]?.value.trim()||'';
-      if(pl){const rod=plates[pl]?.rodizio||PLACAS_BASE[pl]?.rodizio||'';plates[pl]={tara:ta,motorista:mot,rodizio:rod};rows.push({placa:pl,tara:ta,motorista:mot,rodizio:rod});}
-    });
-    if(rows.length>0) sbFetch('/rest/v1/caminhoes','POST',rows).then(()=>toast('✅ Salvo para todos!','ok')).catch(()=>toast('❌ Erro ao salvar','err'));
-    notes.forEach(n=>{if(n.data?.placa)refreshCalc(n.id);});
-  },800);
+// ── MODAL EDITAR CAMINHÃO ──
+let _editPlaca='';
+function abrirModalEdit(pl){
+  const i=plates[pl]; if(!i) return;
+  _editPlaca=pl;
+  document.getElementById('et-placa').textContent=pl;
+  document.getElementById('et-tara').value=i.tara||'';
+  document.getElementById('et-mot').value=i.motorista||'';
+  document.getElementById('et-rod').value=i.rodizio||'';
+  document.getElementById('modal-edit-truck').style.display='flex';
+}
+function fecharModalEdit(){ document.getElementById('modal-edit-truck').style.display='none'; }
+
+async function salvarEdicaoCaminhao(){
+  const ta=parseInt(document.getElementById('et-tara').value)||0;
+  const mot=document.getElementById('et-mot').value.trim();
+  const rod=document.getElementById('et-rod').value;
+  try {
+    await sbFetch(`/rest/v1/caminhoes?placa=eq.${_editPlaca}`,'PATCH',{tara:ta,motorista:mot,rodizio:rod});
+    plates[_editPlaca]={tara:ta,motorista:mot,rodizio:rod};
+    renderPlateList();
+    fecharModalEdit();
+    toast('✅ Caminhão atualizado!','ok');
+    notes.forEach(n=>{if((n.data?.placa||'').toUpperCase()===_editPlaca)refreshCalc(n.id);});
+  } catch(e){ toast('❌ Erro ao salvar','err'); }
+}
+
+async function deletarCaminhaoEdit(){
+  if(!confirm(`Remover ${_editPlaca}?`)) return;
+  try {
+    await sbFetch(`/rest/v1/caminhoes?placa=eq.${_editPlaca}`,'DELETE');
+    delete plates[_editPlaca];
+    renderPlateList();
+    fecharModalEdit();
+    toast('🗑️ Caminhão removido','ok');
+  } catch(e){ toast('❌ Erro ao remover','err'); }
 }
 
 // ══ FILES ══
@@ -726,7 +856,6 @@ async function generateAll(){for(const note of notes.filter(n=>n.status==='ready
 function fmtKG(n){return(n||0).toLocaleString('pt-BR')+' KG';}
 
 // ══ INIT ══
-document.getElementById('truck-body').style.display='none';
 (async()=>{const{data}=await sb.auth.getSession();if(data?.session?.user)await verificarAcesso(data.session.user);})();
 </script>
 </body>
