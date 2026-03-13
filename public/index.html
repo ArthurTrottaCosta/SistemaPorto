@@ -210,6 +210,23 @@ main{max-width:640px;margin:0 auto;padding:20px 14px 60px}
 
 <!-- ══ APP ══ -->
 <div id="toast"></div>
+
+<!-- MODAL PEDIDOS BRASCOMM -->
+<div id="modal-pedidos" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9500;align-items:flex-start;justify-content:center;padding:16px;overflow-y:auto">
+  <div style="background:#fff;border-radius:16px;width:100%;max-width:480px;box-shadow:0 20px 60px rgba(0,0,0,.3);overflow:hidden;margin:auto">
+    <div style="background:#1B5E20;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0">
+      <div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:18px;color:#fff;letter-spacing:1px">🔔 PEDIDOS BRASCOMM</div>
+        <div style="font-size:11px;color:rgba(255,255,255,.6);margin-top:2px">Pedidos recebidos aguardando ticket</div>
+      </div>
+      <button onclick="fecharPedidos()" style="background:rgba(255,255,255,.2);border:none;color:#fff;border-radius:6px;padding:3px 10px;cursor:pointer;font-size:16px">✕</button>
+    </div>
+    <div id="pedidos-lista" style="padding:12px;display:flex;flex-direction:column;gap:8px;max-height:70vh;overflow-y:auto">
+      <div style="text-align:center;color:#8A8A8E;padding:30px 0;font-size:14px">Carregando pedidos…</div>
+    </div>
+  </div>
+</div>
+
 <div class="header">
   <div class="header-inner">
     <!-- Linha 1: logo + nome + user -->
@@ -221,6 +238,9 @@ main{max-width:640px;margin:0 auto;padding:20px 14px 60px}
       </div>
       <div class="hdr-right">
         <button id="btn-owner-hdr" onclick="carregarOwnerScreen()">👑</button>
+        <button id="btn-notif" onclick="abrirPedidos()" style="display:none;position:relative;background:rgba(255,255,255,.15);border:none;color:#fff;border-radius:8px;padding:5px 9px;cursor:pointer;font-size:18px">
+          🔔<span id="notif-badge" style="display:none;position:absolute;top:-4px;right:-4px;background:#E53935;color:#fff;border-radius:10px;font-size:10px;font-weight:800;padding:1px 5px;font-family:'Barlow Condensed',sans-serif;min-width:16px;text-align:center"></span>
+        </button>
         <div>
           <div class="hdr-user-name" id="hdr-user"></div>
           <button class="hdr-logout" onclick="logoutUser()">SAIR</button>
@@ -472,6 +492,7 @@ function entrarNoSistema() {
   document.getElementById('hdr-user').textContent=nome;
   toast(`👋 Bem-vindo, ${nome.split(' ')[0]}!`,'ok');
   loadPlates();
+  iniciarPedidosRealtime();
 }
 
 async function logoutUser() {
@@ -863,6 +884,136 @@ async function generateAll(){for(const note of notes.filter(n=>n.status==='ready
 
 // ══ UTILS ══
 function fmtKG(n){return(n||0).toLocaleString('pt-BR')+' KG';}
+
+// ══ PEDIDOS BRASCOMM ══
+let pedidosRealtime = null;
+
+async function iniciarPedidosRealtime() {
+  // Carregar contagem inicial de pendentes
+  await atualizarBadgePedidos();
+
+  // Mostrar botão sino
+  document.getElementById('btn-notif').style.display = 'flex';
+
+  // Realtime: escuta INSERT na tabela pedidos
+  pedidosRealtime = sb.channel('pedidos-channel')
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'pedidos' }, payload => {
+      atualizarBadgePedidos();
+      const num = payload.new?.numero || '';
+      const mat = payload.new?.material || '';
+      toastPedido(`🔔 Novo pedido #${num} — ${mat}`);
+    })
+    .subscribe();
+}
+
+function toastPedido(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'show ok';
+  // Vibrar no mobile se disponível
+  if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+  setTimeout(() => { t.className = ''; }, 5000);
+}
+
+async function atualizarBadgePedidos() {
+  try {
+    const rows = await sbFetch('/rest/v1/pedidos?status=eq.pendente&select=id');
+    const count = rows?.length || 0;
+    const badge = document.getElementById('notif-badge');
+    const btn = document.getElementById('btn-notif');
+    if (count > 0) {
+      badge.textContent = count > 9 ? '9+' : count;
+      badge.style.display = 'block';
+      btn.style.animation = 'none';
+    } else {
+      badge.style.display = 'none';
+    }
+  } catch(e) {}
+}
+
+async function abrirPedidos() {
+  document.getElementById('modal-pedidos').style.display = 'flex';
+  const lista = document.getElementById('pedidos-lista');
+  lista.innerHTML = '<div style="text-align:center;color:#8A8A8E;padding:30px 0;font-size:14px">Carregando…</div>';
+  try {
+    const rows = await sbFetch('/rest/v1/pedidos?select=*&order=created_at.desc&limit=50');
+    if (!rows || rows.length === 0) {
+      lista.innerHTML = '<div style="text-align:center;color:#8A8A8E;padding:30px 0;font-size:14px">Nenhum pedido recebido ainda</div>';
+      return;
+    }
+    const ROD_COR = {SEGUNDA:'#3b82f6',TERÇA:'#8b5cf6',QUARTA:'#f59e0b',QUINTA:'#10b981',SEXTA:'#ef4444',FRETADO:'#6b7280'};
+    const STATUS_COR = { pendente:'#F59E0B', gerado:'#10B981', cancelado:'#6B7280' };
+    lista.innerHTML = '';
+    rows.forEach(p => {
+      const cor = STATUS_COR[p.status] || '#888';
+      const data = p.data_pedido ? new Date(p.data_pedido + 'T12:00:00').toLocaleDateString('pt-BR') : '—';
+      const div = document.createElement('div');
+      div.style.cssText = 'border:1.5px solid #E5E5EA;border-radius:10px;padding:12px 14px;background:#fff;cursor:pointer';
+      div.innerHTML = `
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:16px;color:#1C1C1E">Pedido #${p.numero}</span>
+            <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;background:${cor}22;color:${cor};font-family:'Barlow Condensed',sans-serif;text-transform:uppercase">${p.status}</span>
+          </div>
+          <span style="font-size:11px;color:#8A8A8E">${data}</span>
+        </div>
+        <div style="font-size:13px;color:#3A3A3C;font-weight:600">${p.material || '—'}</div>
+        <div style="display:flex;gap:12px;margin-top:4px">
+          <span style="font-size:12px;color:#8A8A8E">${p.empresa === 'PF' ? '🏔 Porto Fortaleza' : '♻️ CR Ambiental'}</span>
+          ${p.quantidade ? `<span style="font-size:12px;color:#8A8A8E">${p.quantidade} ${p.unidade||'TON'}</span>` : ''}
+          ${p.placa ? `<span style="font-size:12px;color:#8A8A8E">🚛 ${p.placa}</span>` : ''}
+        </div>
+        ${p.status === 'pendente' ? `
+        <div style="display:flex;gap:6px;margin-top:10px">
+          <button onclick="usarPedido('${p.id}')" style="flex:1;padding:8px;background:#1B5E20;color:#fff;border:none;border-radius:7px;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:13px;letter-spacing:.5px;cursor:pointer">▶ USAR PARA TICKET</button>
+          <button onclick="cancelarPedido('${p.id}','${p.numero}')" style="padding:8px 12px;background:transparent;border:1.5px solid #C0392B;color:#C0392B;border-radius:7px;font-size:13px;cursor:pointer">✕</button>
+        </div>` : ''}`;
+      lista.appendChild(div);
+    });
+  } catch(e) {
+    lista.innerHTML = '<div style="text-align:center;color:#C0392B;padding:30px 0;font-size:13px">Erro ao carregar pedidos</div>';
+  }
+}
+
+function fecharPedidos() { document.getElementById('modal-pedidos').style.display = 'none'; }
+
+async function usarPedido(id) {
+  try {
+    const rows = await sbFetch(`/rest/v1/pedidos?id=eq.${id}&select=*`);
+    const p = rows?.[0]; if (!p) return;
+    // Trocar empresa automaticamente
+    if (p.empresa && p.empresa !== empresa) setEmpresa(p.empresa);
+    // Marcar como gerado
+    await sbFetch(`/rest/v1/pedidos?id=eq.${id}`, 'PATCH', { status: 'gerado' });
+    fecharPedidos();
+    atualizarBadgePedidos();
+    // Criar card manual com dados do pedido
+    const noteId = ++window._noteIdCounter || 1;
+    const nota = {
+      id: noteId, tipo: 'PEDIDO', status: 'ready', ticketDone: false,
+      data: {
+        numero: p.numero, data: p.data_pedido ? new Date(p.data_pedido + 'T12:00:00').toLocaleDateString('pt-BR') : new Date().toLocaleDateString('pt-BR'),
+        placa: p.placa || '', material: p.material || '', pesoLiquido: p.peso_kg || (p.quantidade ? Math.round(p.quantidade * 1000) : 0),
+        tara: p.placa ? (plates[p.placa.toUpperCase()]?.tara || 0) : 0,
+        motorista: p.placa ? (plates[p.placa.toUpperCase()]?.motorista || '') : '',
+        rodizio: p.placa ? (plates[p.placa.toUpperCase()]?.rodizio || '') : '',
+      }
+    };
+    notes.push(nota);
+    document.getElementById('queue-section').style.display = '';
+    renderCard(nota);
+    updateQueueBar();
+    toast('✅ Pedido #' + p.numero + ' carregado!', 'ok');
+    document.getElementById('note-list').scrollIntoView({ behavior: 'smooth' });
+  } catch(e) { toast('❌ Erro ao usar pedido', 'err'); }
+}
+
+async function cancelarPedido(id, numero) {
+  if (!confirm(`Cancelar pedido #${numero}?`)) return;
+  await sbFetch(`/rest/v1/pedidos?id=eq.${id}`, 'PATCH', { status: 'cancelado' });
+  atualizarBadgePedidos();
+  abrirPedidos();
+}
 
 // ══ INIT ══
 (async()=>{const{data}=await sb.auth.getSession();if(data?.session?.user)await verificarAcesso(data.session.user);})();
