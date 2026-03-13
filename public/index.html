@@ -17,19 +17,21 @@
 body{background:var(--bg);color:var(--g1);font-family:'Barlow',sans-serif;font-size:15px;min-height:100vh}
 /* HEADER */
 .header{background:var(--green);position:sticky;top:0;z-index:200;box-shadow:0 3px 16px rgba(0,0,0,.30)}
-.header-inner{display:flex;align-items:stretch;max-width:640px;margin:0 auto}
-.hdr-logo{background:#fff;display:flex;align-items:center;justify-content:center;padding:6px 10px;min-width:70px;max-width:80px}
-.hdr-logo img{height:52px;width:auto;max-width:70px;object-fit:contain;display:block}
-.hdr-text{padding:12px 16px;display:flex;flex-direction:column;justify-content:center;flex:1}
-.hdr-text h1{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:20px;color:#fff;letter-spacing:.5px;line-height:1}
-.hdr-text p{font-size:11px;color:rgba(255,255,255,.55);letter-spacing:1.5px;text-transform:uppercase;margin-top:3px}
-.hdr-right{display:flex;align-items:center;gap:6px;padding:0 10px}
-#btn-owner-hdr{display:none;align-items:center;background:rgba(255,255,255,.15);border:none;color:#fff;border-radius:6px;padding:5px 9px;cursor:pointer;font-size:14px}
-.hdr-user-name{font-size:12px;color:rgba(255,255,255,.9);font-weight:600;max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.hdr-logout{background:none;border:none;color:rgba(255,255,255,.45);font-size:10px;cursor:pointer;letter-spacing:.5px;padding:0;display:block;margin-top:2px}
-/* SWITCH */
-.empresa-switch{display:flex;background:rgba(255,255,255,.12);border-radius:8px;padding:3px;gap:2px;margin:8px 12px 8px 0}
-.empresa-btn{flex:1;padding:5px 10px;border:none;border-radius:6px;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:12px;letter-spacing:.5px;cursor:pointer;color:rgba(255,255,255,.65);background:transparent;white-space:nowrap;transition:all .2s}
+.header-inner{display:flex;flex-direction:column;max-width:640px;margin:0 auto}
+.hdr-row1{display:flex;align-items:stretch}
+.hdr-logo{background:#fff;display:flex;align-items:center;justify-content:center;padding:6px 10px;width:70px;flex-shrink:0}
+.hdr-logo img{height:48px;width:auto;max-width:56px;object-fit:contain;display:block}
+.hdr-text{padding:8px 12px;display:flex;flex-direction:column;justify-content:center;flex:1;min-width:0}
+.hdr-text h1{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:18px;color:#fff;letter-spacing:.5px;line-height:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hdr-text p{font-size:10px;color:rgba(255,255,255,.55);letter-spacing:1px;text-transform:uppercase;margin-top:2px}
+.hdr-right{display:flex;align-items:center;gap:6px;padding:0 10px;flex-shrink:0}
+#btn-owner-hdr{display:none;align-items:center;background:rgba(255,255,255,.15);border:none;color:#fff;border-radius:6px;padding:4px 8px;cursor:pointer;font-size:14px}
+.hdr-user-name{font-size:11px;color:rgba(255,255,255,.9);font-weight:600;max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:right}
+.hdr-logout{background:none;border:none;color:rgba(255,255,255,.45);font-size:10px;cursor:pointer;letter-spacing:.5px;padding:0;display:block;margin-top:1px;text-align:right}
+/* SWITCH — linha 2 do header, sempre visível */
+.hdr-row2{display:flex;padding:6px 10px 8px;gap:6px}
+.empresa-switch{display:flex;background:rgba(255,255,255,.12);border-radius:8px;padding:3px;gap:2px;flex:1}
+.empresa-btn{flex:1;padding:6px 4px;border:none;border-radius:6px;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:13px;letter-spacing:.5px;cursor:pointer;color:rgba(255,255,255,.7);background:transparent;white-space:nowrap;transition:all .2s}
 .empresa-btn.active{background:#fff;color:var(--green)}
 /* MAIN */
 main{max-width:640px;margin:0 auto;padding:20px 14px 60px}
@@ -209,21 +211,27 @@ main{max-width:640px;margin:0 auto;padding:20px 14px 60px}
 <div id="toast"></div>
 <div class="header">
   <div class="header-inner">
-    <div class="hdr-logo"><img src="logo.png" alt="" id="hdr-logo-img"></div>
-    <div class="hdr-text">
-      <h1 id="hdr-nome">Porto Fortaleza</h1>
-      <p>Gerador Automático de Ticket</p>
-    </div>
-    <div class="hdr-right">
-      <button id="btn-owner-hdr" onclick="carregarOwnerScreen()">👑</button>
-      <div>
-        <div class="hdr-user-name" id="hdr-user"></div>
-        <button class="hdr-logout" onclick="logoutUser()">SAIR</button>
+    <!-- Linha 1: logo + nome + user -->
+    <div class="hdr-row1">
+      <div class="hdr-logo"><img src="logo.png" alt="" id="hdr-logo-img"></div>
+      <div class="hdr-text">
+        <h1 id="hdr-nome">Porto Fortaleza</h1>
+        <p>Gerador de Ticket</p>
+      </div>
+      <div class="hdr-right">
+        <button id="btn-owner-hdr" onclick="carregarOwnerScreen()">👑</button>
+        <div>
+          <div class="hdr-user-name" id="hdr-user"></div>
+          <button class="hdr-logout" onclick="logoutUser()">SAIR</button>
+        </div>
       </div>
     </div>
-    <div class="empresa-switch">
-      <button class="empresa-btn active" id="btn-pf" onclick="setEmpresa('PF')">Porto Fortaleza</button>
-      <button class="empresa-btn"        id="btn-cr" onclick="setEmpresa('CR')">CR Ambiental</button>
+    <!-- Linha 2: switch empresa — sempre visível -->
+    <div class="hdr-row2">
+      <div class="empresa-switch">
+        <button class="empresa-btn active" id="btn-pf" onclick="setEmpresa('PF')">🏔 Porto Fortaleza</button>
+        <button class="empresa-btn"        id="btn-cr" onclick="setEmpresa('CR')">♻️ CR Ambiental</button>
+      </div>
     </div>
   </div>
 </div>
