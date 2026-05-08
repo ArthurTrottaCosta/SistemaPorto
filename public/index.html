@@ -715,6 +715,9 @@ function parsearPEDIDO(txt){
   return r;
 }
 
+// Remove acentos para comparar contra STOP set ASCII (\u00c1\u2192A, \u00c7\u2192C, \u00cd\u2192I, etc)
+function _semAcento(s){return s.normalize('NFD').replace(/\p{M}/gu,'').toUpperCase();}
+
 function parsearDANFE(txt){
   const r={};
   const mN=txt.match(/N[\u00ba\u00b0o][:\s]+(\d{3,6})/);if(mN)r.numero_nf=mN[1];
@@ -725,23 +728,29 @@ function parsearDANFE(txt){
   if(mP){
     r.peso_carga_kg=mP[2]==='KG'?Math.round(parseFloat(mP[3].replace(',','.'))):Math.round(parseFloat(mP[3].replace(',','.'))*1000);
 
-    // Estratégia 1: descrição está na mesma linha antes do NCM
-    // Padrão: CÓD  DESCRIÇÃO  NCM(8dig)  CSO  CFOP  UND  QTD...
-    // Ex: "AMT AREIA MEDIA LAVADA 25051000 0102 5102 TON 19,96..."
-    const mInline = txt.match(/([A-ZÁÉÍÓÚÂÊÔÃÕÇ][A-ZÁÉÍÓÚÂÊÔÃÕÇ\s]{3,}?)\s+\d{8}\s+\d{3,4}\s+\d{4}\s+(TON|M3|KG|UN)/i);
-    if(mInline){
-      // remove possível código de produto no início (ex: "AMT ")
-      let desc = mInline[1].trim();
-      // se começa com código curto (2-4 letras maiúsculas) seguido de espaço, remove
-      desc = desc.replace(/^[A-Z]{2,5}\s+/, '');
-      r.material = desc.toUpperCase();
-    } else {
-      // Estratégia 2: varrer linhas antes do NCM (quando há quebras de linha reais)
-      const STOP=new Set(['TOTAL','ICMS','IPI','CFOP','NCM','CSO','UNID','QUANT','VALOR','PROD','DESC','ITEM','QTD','PLACA','NF','EMISSAO','FORNECEDOR','DESTINATARIO','NOTA','FISCAL']);
-      const linhas=txt.slice(0,txt.indexOf(mP[0])).split('\n');let mat='—';
-      for(let i=linhas.length-1;i>=0;i--){const ln=linhas[i].trim();if(!ln||ln.length<4||/\d/.test(ln))continue;if(ln.toUpperCase().split(/\s+/).some(w=>STOP.has(w)))continue;mat=ln.toUpperCase();break;}
-      r.material=mat;
+    // Material: caminhar palavra por palavra antes do NCM, parando ao bater
+    // num cabeçalho de coluna (ICMS, IPI, CFOP, ALIQ, etc). Funciona tanto com
+    // texto multilinha (pdf-parse) quanto com texto numa linha só (pdf.js join).
+    const STOP=new Set([
+      'TOTAL','ICMS','IPI','ALIQ','ALIQUOTA','UNIT','UNITARIO','SN','BC','CFOP','NCM','CSO','CSOSN',
+      'UNID','UND','QUANT','QTD','VALOR','PROD','PRODUTO','DESC','DESCRICAO','ITEM',
+      'DISCRIMINACAO','TRIBUTOS','CODIGO','COD','SERVICOS','PRODUTOS','DADOS','DOS','DA','DO',
+      'PLACA','NF','EMISSAO','FORNECEDOR','DESTINATARIO','NOTA','FISCAL','FRETE','SEGURO','DESCONTO'
+    ]);
+    const antes=txt.slice(0,txt.indexOf(mP[0])).split(/\s+/).filter(Boolean);
+    const mat=[];
+    for(let i=antes.length-1;i>=0;i--){
+      const raw=antes[i];
+      // limpa pontuação para comparar contra STOP (remove ponto, parênteses, etc)
+      const w=_semAcento(raw.replace(/[^A-Za-zÀ-ú0-9]/g,''));
+      // Aceita dígitos curtos (1-2) como sufixo de material ("BRITA 1", "AREIA 0")
+      if(!w||/^\d{3,}$/.test(w)||STOP.has(w))break;
+      mat.unshift(raw.replace(/[^A-Za-zÀ-ú0-9\-]/g,''));
     }
+    // Remove código curto no início UMA VEZ (ex: AMT, POT) — só se for 1-4 letras
+    // E houver pelo menos 2 palavras de descrição depois. Evita comer "AREIA" sozinho.
+    if(mat.length>=3&&/^[A-Z]{1,4}$/.test(_semAcento(mat[0]))) mat.shift();
+    r.material=mat.filter(Boolean).join(' ').trim().toUpperCase()||'—';
   }
   return r;
 }
@@ -817,7 +826,10 @@ function syncNote(id){
   const note=notes.find(n=>n.id===id); if(!note)return; note.data=note.data||{};
   note.data.numero_nf=document.getElementById(`f-nf-${id}`)?.value||'';
   note.data.data=document.getElementById(`f-data-${id}`)?.value||'';
-  note.data.placa=document.getElementById(`f-placa-${id}`)?.value||'';
+  // Normaliza placa ao salvar — uppercase, sem espaço/hífen/símbolo —
+  // para que plates[placa] sempre case com o cadastro.
+  const rawPlaca=document.getElementById(`f-placa-${id}`)?.value||'';
+  note.data.placa=rawPlaca.toUpperCase().replace(/[^A-Z0-9]/g,'');
   note.data.peso_carga_kg=parseInt(document.getElementById(`f-carga-${id}`)?.value)||0;
   note.data.material=document.getElementById(`f-mat-${id}`)?.value||'';
 }
@@ -873,14 +885,43 @@ async function buildPDF(note){
   return {doc,filename:`ticket da NF${nf} ${placa}.pdf`};
 }
 
-async function generateOne(id){
+async function generateOne(id, skipChecks){
   const note=notes.find(n=>n.id===id);if(!note)return;
+  syncNote(id);
+  if(!skipChecks){
+    const pl=note.data?.placa||'';
+    if(!pl){
+      if(!confirm('⚠️ Nenhuma placa preenchida.\n\nO ticket vai sair com VEICULO: — e TARA: 0.\n\nGerar mesmo assim?')) {
+        document.getElementById(`f-placa-${id}`)?.focus();
+        return;
+      }
+    } else if(!plates[pl]){
+      if(!confirm(`⚠️ Placa ${pl} não está cadastrada.\n\nO ticket vai sair com TARA: 0.\n\nGerar mesmo assim?`)) {
+        document.getElementById(`f-placa-${id}`)?.focus();
+        return;
+      }
+    }
+  }
   const {doc,filename}=await buildPDF(note);doc.save(filename);note.ticketDone=true;
   setCardState(id,'done','🎟️ Ticket gerado! '+filename);
   const btn=document.getElementById(`btn-ticket-${id}`);if(btn){btn.textContent='✅ GERADO';btn.className='btn-ticket done-btn';btn.disabled=true;}
   updateQueueBar();
 }
-async function generateAll(){for(const note of notes.filter(n=>n.status==='ready'&&!n.ticketDone))await generateOne(note.id);}
+async function generateAll(){
+  // Pre-check: avisa se algum tem problema, mas só uma vez
+  const pendentes=notes.filter(n=>n.status==='ready'&&!n.ticketDone);
+  pendentes.forEach(n=>syncNote(n.id));
+  const semPlaca=pendentes.filter(n=>!n.data?.placa).length;
+  const naoCadastrada=pendentes.filter(n=>n.data?.placa&&!plates[n.data.placa]).length;
+  if(semPlaca||naoCadastrada){
+    let msg='⚠️ ';
+    if(semPlaca) msg+=`${semPlaca} ticket(s) sem placa preenchida\n`;
+    if(naoCadastrada) msg+=`${naoCadastrada} ticket(s) com placa não cadastrada\n`;
+    msg+='\nGerar todos mesmo assim?';
+    if(!confirm(msg)) return;
+  }
+  for(const note of pendentes) await generateOne(note.id, true);
+}
 
 // ══ UTILS ══
 function fmtKG(n){return(n||0).toLocaleString('pt-BR')+' KG';}
@@ -987,25 +1028,35 @@ async function usarPedido(id) {
     await sbFetch(`/rest/v1/pedidos?id=eq.${id}`, 'PATCH', { status: 'gerado' });
     fecharPedidos();
     atualizarBadgePedidos();
-    // Criar card manual com dados do pedido
-    const noteId = ++window._noteIdCounter || 1;
+    // Criar card manual com dados do pedido — usa o mesmo schema do upload de PDF
+    // para que populateNoteFields/buildPDF funcionem sem mudança.
+    const newId = ++noteId;
+    const placaUp = (p.placa || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+    const peso = p.peso_kg || (p.quantidade ? Math.round(parseFloat(p.quantidade) * 1000) : 0);
+    const dataISO = p.data_pedido || new Date().toISOString().slice(0,10);
     const nota = {
-      id: noteId, tipo: 'PEDIDO', status: 'ready', ticketDone: false,
+      id: newId,
+      file: { name: `Pedido #${p.numero}` },
+      status: 'ready',
+      ticketDone: false,
       data: {
-        numero: p.numero, data: p.data_pedido ? new Date(p.data_pedido + 'T12:00:00').toLocaleDateString('pt-BR') : new Date().toLocaleDateString('pt-BR'),
-        placa: p.placa || '', material: p.material || '', pesoLiquido: p.peso_kg || (p.quantidade ? Math.round(p.quantidade * 1000) : 0),
-        tara: p.placa ? (plates[p.placa.toUpperCase()]?.tara || 0) : 0,
-        motorista: p.placa ? (plates[p.placa.toUpperCase()]?.motorista || '') : '',
-        rodizio: p.placa ? (plates[p.placa.toUpperCase()]?.rodizio || '') : '',
+        tipo_doc: 'PEDIDO',
+        numero_nf: String(p.numero || ''),
+        data: dataISO,
+        placa: placaUp,
+        material: (p.material || '').toUpperCase(),
+        peso_carga_kg: peso,
       }
     };
     notes.push(nota);
-    document.getElementById('queue-section').style.display = '';
-    renderCard(nota);
+    document.getElementById('queue-section').style.display = 'block';
+    renderNoteCard(nota);
+    setCardState(newId, 'ready', `✅ 📋 Pedido #${p.numero} — pronto para gerar ticket`);
+    populateNoteFields(nota);
     updateQueueBar();
     toast('✅ Pedido #' + p.numero + ' carregado!', 'ok');
     document.getElementById('note-list').scrollIntoView({ behavior: 'smooth' });
-  } catch(e) { toast('❌ Erro ao usar pedido', 'err'); }
+  } catch(e) { console.error(e); toast('❌ Erro ao usar pedido', 'err'); }
 }
 
 async function cancelarPedido(id, numero) {
