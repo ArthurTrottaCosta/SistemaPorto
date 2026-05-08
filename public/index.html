@@ -496,10 +496,17 @@ function entrarNoSistema() {
 }
 
 async function logoutUser() {
+  // Fecha o canal realtime antes do signOut pra nao deixar conexao orfa
+  // consumindo cota do Supabase realtime nem disparando notificacoes.
+  if (pedidosRealtime) {
+    try { await sb.removeChannel(pedidosRealtime); } catch(_){}
+    pedidosRealtime = null;
+  }
   await sb.auth.signOut(); currentUser=null; currentUserData=null;
   document.getElementById('auth-screen').style.display='flex';
   document.getElementById('hdr-user').textContent='';
   document.getElementById('btn-owner-hdr').style.display='none';
+  document.getElementById('btn-notif').style.display='none';
 }
 
 // ══ PAINEL ADMIN ══
@@ -698,11 +705,31 @@ async function extrairTextoPDFjs(b64){
   }
   const bin=atob(b64),arr=new Uint8Array(bin.length);
   for(let i=0;i<bin.length;i++)arr[i]=bin.charCodeAt(i);
-  const pdf=await pdfjsLib.getDocument({data:arr}).promise, page=await pdf.getPage(1), cont=await page.getTextContent();
-  return cont.items.map(i=>i.str).join(' ');
+  const pdf=await pdfjsLib.getDocument({data:arr}).promise;
+  // Le TODAS as paginas — DANFE/Pedido as vezes tem o produto na pagina 2
+  let allText='';
+  for(let i=1;i<=pdf.numPages;i++){
+    const page=await pdf.getPage(i);
+    const cont=await page.getTextContent();
+    allText += cont.items.map(it=>it.str).join(' ') + ' ';
+  }
+  return allText;
 }
 
-function detectarTipo(txt){return /BRASCOMM|Controle Interno|PED:/i.test(txt)?'PEDIDO':'DANFE';}
+function detectarTipo(txt){
+  // Pedido Brascomm tem "Controle Interno: NNN" + "PED: NNN" + URL brascomm.net.br.
+  // DANFE tem "NF-e", "DANFE", "CHAVE DE ACESSO", "NCM".
+  // Score-based pra evitar falso-positivo em NFs que mencionem "PED" em endereço.
+  let score=0;
+  if(/\bBRASCOMM\b/i.test(txt)) score+=3;
+  if(/brascomm\.net\.br/i.test(txt)) score+=3;
+  if(/Controle\s+Interno[:\s]+\d/i.test(txt)) score+=2;
+  if(/\bPED[:\s]+\d{4,6}/i.test(txt)) score+=2;
+  if(/\bDANFE\b/i.test(txt)) score-=3;
+  if(/CHAVE\s+DE\s+ACESSO/i.test(txt)) score-=2;
+  if(/NF-?e\s+N[º°]/i.test(txt)) score-=2;
+  return score>0?'PEDIDO':'DANFE';
+}
 
 function parsearPEDIDO(txt){
   const r={};
@@ -721,8 +748,17 @@ function _semAcento(s){return s.normalize('NFD').replace(/\p{M}/gu,'').toUpperCa
 function parsearDANFE(txt){
   const r={};
   const mN=txt.match(/N[\u00ba\u00b0o][:\s]+(\d{3,6})/);if(mN)r.numero_nf=mN[1];
-  let mD=txt.match(/Emiss[\u00e3a]o\s+(\d{2}\/\d{2}\/\d{4})/);if(!mD)mD=txt.match(/(\d{2}\/\d{2}\/\d{4})/);
+  // Ordem de prioridade: SAIDA (que e o que vai pro ticket) > Emissao > primeira data
+  let mD=txt.match(/DATA\s+DE\s+SA[\u00cdI]DA\s+(\d{2}\/\d{2}\/\d{4})/i);
+  if(!mD)mD=txt.match(/Emiss[\u00e3a]o\s+(\d{2}\/\d{2}\/\d{4})/);
+  if(!mD)mD=txt.match(/DATA\s+DE\s+EMISS[\u00c3A]O\s+(\d{2}\/\d{2}\/\d{4})/i);
+  if(!mD)mD=txt.match(/(\d{2}\/\d{2}\/\d{4})/);
   if(mD){const[d,m,y]=mD[1].split('/');r.data=`${y}-${m}-${d}`;}
+  // Empresa do remetente \u2014 PF ou CR. Pega no remetente, nao no destinatario.
+  // CNPJ PF: 20.089.905/0001-97. Se nao bater por CNPJ, cai no nome.
+  if(/20\.?089\.?905\/?0001-?97/.test(txt)) r.empresa='PF';
+  else if(/CR\s+AMBIENTAL/i.test(txt)) r.empresa='CR';
+  else if(/PORTO\s+FORTALEZA/i.test(txt)) r.empresa='PF';
   const mPl=txt.match(/\b([A-Z]{3}[-\s]?\d[A-Z0-9]\d{2})\b/);r.placa=mPl?mPl[1].replace(/[-\s]/g,''):'';
   const mP=txt.match(/(\d{7,8})\s+\d{3,4}\s+\d{4}\s+(TON|M3|KG|UN)\s+([\d,]+)/);
   if(mP){
@@ -758,16 +794,24 @@ function parsearDANFE(txt){
 async function extractFromPDF(b64){
   const txt=await extrairTextoPDFjs(b64), tipo=detectarTipo(txt);
   const dados=tipo==='PEDIDO'?parsearPEDIDO(txt):parsearDANFE(txt);
-  if(tipo==='PEDIDO'&&dados.empresa&&dados.empresa!==empresa)setEmpresa(dados.empresa);
+  // Empresa: PEDIDO e DANFE detectam ambos. Usa pra (1) auto-trocar o switch
+  // global na primeira vez que o operador faz upload, e (2) ficar guardada na
+  // nota pra buildPDF usar mesmo se o switch mudar depois.
+  if(dados.empresa&&dados.empresa!==empresa)setEmpresa(dados.empresa);
+  if(!dados.empresa) dados.empresa=empresa; // fallback
   if(!dados.numero_nf)throw new Error('PDF não reconhecido. Use NF-e ou Pedido Brascomm.');
   dados.tipo_doc=tipo; return dados;
 }
 
 // ══ NOTE CARDS ══
+// Escapa HTML pra evitar quebra de layout/XSS quando filename ou material
+// tem caracteres especiais (<, >, ", &, ')
+function _esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+
 function renderNoteCard(note){
   const list=document.getElementById('note-list');list.querySelector('.empty-state')?.remove();
   const div=document.createElement('div');div.id=`card-${note.id}`;div.className='note-card processing';
-  div.innerHTML=`<div class="note-head processing" id="head-${note.id}" onclick="toggleCard(${note.id})"><span class="note-status-icon" id="icon-${note.id}"><span class="spin-sm"></span></span><div class="note-info"><div class="note-filename">${note.file.name}</div><div class="note-subtitle" id="sub-${note.id}">Aguardando processamento…</div></div><span class="note-arrow" id="arrow-${note.id}">▼</span></div><div class="note-body" id="body-${note.id}"><div class="note-body-inner" id="fields-${note.id}"><div style="text-align:center;padding:20px;color:var(--g3)"><span class="spin-sm"></span> Processando…</div></div></div>`;
+  div.innerHTML=`<div class="note-head processing" id="head-${note.id}" onclick="toggleCard(${note.id})"><span class="note-status-icon" id="icon-${note.id}"><span class="spin-sm"></span></span><div class="note-info"><div class="note-filename">${_esc(note.file.name)}</div><div class="note-subtitle" id="sub-${note.id}">Aguardando processamento…</div></div><span class="note-arrow" id="arrow-${note.id}">▼</span></div><div class="note-body" id="body-${note.id}"><div class="note-body-inner" id="fields-${note.id}"><div style="text-align:center;padding:20px;color:var(--g3)"><span class="spin-sm"></span> Processando…</div></div></div>`;
   list.appendChild(div);
 }
 function toggleCard(id){const b=document.getElementById(`body-${id}`),a=document.getElementById(`arrow-${id}`);a.classList.toggle('open',b.classList.toggle('open'));}
@@ -787,18 +831,18 @@ function populateNoteFields(note){
     :`<div class="calc-box warn" id="box-tara-${note.id}"><span class="lbl">Tara</span><span class="val" id="val-tara-${note.id}">${pl?'Não cadastrada':'—'}</span></div><div class="calc-box bruto"><span class="lbl">Peso Bruto</span><span class="val" id="val-bruto-${note.id}">—</span></div>`;
   document.getElementById(`fields-${note.id}`).innerHTML=`
     <div class="field-group">
-      <div class="field"><label>${d.tipo_doc==='PEDIDO'?'Número do Pedido':'Número da Nota Fiscal'}</label><input type="text" id="f-nf-${note.id}" value="${d.numero_nf||''}" placeholder="—" oninput="syncNote(${note.id})"></div>
+      <div class="field"><label>${d.tipo_doc==='PEDIDO'?'Número do Pedido':'Número da Nota Fiscal'}</label><input type="text" id="f-nf-${note.id}" value="${_esc(d.numero_nf||'')}" placeholder="—" oninput="syncNote(${note.id})"></div>
       <div class="row2">
-        <div class="field"><label>Data</label><input type="date" id="f-data-${note.id}" value="${d.data||''}" oninput="syncNote(${note.id})"></div>
-        <div class="field"><label>Placa</label><input type="text" id="f-placa-${note.id}" value="${pl}" placeholder="ABC1D23" oninput="refreshCalc(${note.id})"></div>
+        <div class="field"><label>Data</label><input type="date" id="f-data-${note.id}" value="${_esc(d.data||'')}" oninput="syncNote(${note.id})"></div>
+        <div class="field"><label>Placa</label><input type="text" id="f-placa-${note.id}" value="${_esc(pl)}" placeholder="ABC1D23" oninput="refreshCalc(${note.id})"></div>
       </div>
       <div class="field"><label>Peso Líquido (KG)</label><input type="number" id="f-carga-${note.id}" value="${ca||''}" placeholder="0" oninput="refreshCalc(${note.id})"></div>
-      <div class="field"><label>Material</label><input type="text" id="f-mat-${note.id}" value="${d.material||''}" placeholder="—" oninput="syncNote(${note.id})"></div>
+      <div class="field"><label>Material</label><input type="text" id="f-mat-${note.id}" value="${_esc(d.material||'')}" placeholder="—" oninput="syncNote(${note.id})"></div>
     </div>
     <div class="calc-strip">${taraH}</div>
     <div class="info-pills">
-      <div class="info-pill"><div class="lbl">Motorista</div><div class="val" id="val-mot-${note.id}">${mot||'—'}</div></div>
-      <div class="info-pill"><div class="lbl">Rodízio</div><div class="val" id="val-rod-${note.id}" style="color:${ROD_COR[rod]||'var(--g3)'};font-weight:700">${rod||'—'}</div></div>
+      <div class="info-pill"><div class="lbl">Motorista</div><div class="val" id="val-mot-${note.id}">${_esc(mot)||'—'}</div></div>
+      <div class="info-pill"><div class="lbl">Rodízio</div><div class="val" id="val-rod-${note.id}" style="color:${ROD_COR[rod]||'var(--g3)'};font-weight:700">${_esc(rod)||'—'}</div></div>
     </div>
     <div class="note-actions">
       <button class="btn-ticket" id="btn-ticket-${note.id}" onclick="generateOne(${note.id})">🖨 GERAR TICKET</button>
@@ -853,7 +897,11 @@ function loadImageAsBase64(src){return new Promise((res,rej)=>{const img=new Ima
 
 async function buildPDF(note){
   const {jsPDF}=window.jspdf; syncNote(note.id);
-  const emp=EMPRESAS[empresa], d=note.data||{}, nf=d.numero_nf||'—', carga=d.peso_carga_kg||0;
+  // Empresa do TICKET vem da nota (extraida do PDF). So cai no global se a
+  // nota nao tiver empresa marcada — assim duas notas de empresas diferentes
+  // saem com cabecalhos corretos mesmo se o switch global tiver mudado.
+  const empKey=note.data?.empresa||empresa;
+  const emp=EMPRESAS[empKey], d=note.data||{}, nf=d.numero_nf||'—', carga=d.peso_carga_kg||0;
   const placa=(d.placa||'').toUpperCase().replace(/[^A-Z0-9]/g,'')||'—', mat=(d.material||'—').toUpperCase();
   const pi=plates[placa], tara=pi?.tara||0, bruto=carga+tara;
   const dataFmt=d.data?(()=>{const[y,m,dv]=d.data.split('-');return`${dv}/${m}/${y}`;})():'—';
@@ -944,19 +992,27 @@ function fmtKG(n){return(n||0).toLocaleString('pt-BR')+' KG';}
 let pedidosRealtime = null;
 
 async function iniciarPedidosRealtime() {
-  // Carregar contagem inicial de pendentes
-  await atualizarBadgePedidos();
+  // Se ja existe um subscribe ativo, fecha antes de criar outro pra evitar
+  // notificacoes duplicadas quando o usuario faz login/logout/login.
+  if (pedidosRealtime) {
+    try { await sb.removeChannel(pedidosRealtime); } catch(_){}
+    pedidosRealtime = null;
+  }
 
-  // Mostrar botão sino
+  await atualizarBadgePedidos();
   document.getElementById('btn-notif').style.display = 'flex';
 
-  // Realtime: escuta INSERT na tabela pedidos
   pedidosRealtime = sb.channel('pedidos-channel')
     .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'pedidos' }, payload => {
       atualizarBadgePedidos();
       const num = payload.new?.numero || '';
       const mat = payload.new?.material || '';
       toastPedido(`🔔 Novo pedido #${num} — ${mat}`);
+    })
+    // UPDATE tambem atualiza o badge: quando outro operador gera o ticket,
+    // o status muda pra "gerado" e a contagem de pendentes cai.
+    .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'pedidos' }, () => {
+      atualizarBadgePedidos();
     })
     .subscribe();
 }
@@ -1060,6 +1116,10 @@ async function usarPedido(id) {
         placa: placaUp,
         material: (p.material || '').toUpperCase(),
         peso_carga_kg: peso,
+        // Empresa amarrada na nota — buildPDF usa essa em vez do switch global,
+        // evitando que o ticket saia com cabecalho da empresa errada se o
+        // operador alternar PF/CR enquanto tem cards de empresas diferentes.
+        empresa: p.empresa || empresa,
       }
     };
     notes.push(nota);
