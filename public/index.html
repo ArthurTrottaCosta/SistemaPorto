@@ -31,7 +31,7 @@ body{background:var(--bg);color:var(--g1);font-family:'Barlow',sans-serif;font-s
 /* SWITCH — linha 2 do header, sempre visível */
 .hdr-row2{display:flex;padding:6px 10px 8px;gap:6px}
 .empresa-switch{display:flex;background:rgba(255,255,255,.12);border-radius:8px;padding:3px;gap:2px;flex:1}
-.empresa-btn{flex:1;padding:6px 4px;border:none;border-radius:6px;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:13px;letter-spacing:.5px;cursor:pointer;color:rgba(255,255,255,.7);background:transparent;white-space:nowrap;transition:all .2s}
+.empresa-btn{flex:1;padding:6px 3px;border:none;border-radius:6px;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:12px;letter-spacing:.4px;cursor:pointer;color:rgba(255,255,255,.7);background:transparent;white-space:nowrap;transition:all .2s;overflow:hidden;text-overflow:ellipsis}
 .empresa-btn.active{background:#fff;color:var(--green)}
 /* MAIN */
 main{max-width:640px;margin:0 auto;padding:20px 14px 60px}
@@ -252,6 +252,7 @@ main{max-width:640px;margin:0 auto;padding:20px 14px 60px}
       <div class="empresa-switch">
         <button class="empresa-btn active" id="btn-pf" onclick="setEmpresa('PF')">🏔 Porto Fortaleza</button>
         <button class="empresa-btn"        id="btn-cr" onclick="setEmpresa('CR')">♻️ CR Ambiental</button>
+        <button class="empresa-btn"        id="btn-future" onclick="setEmpresa('FUTURE')">⛏️ Future</button>
       </div>
     </div>
   </div>
@@ -542,6 +543,7 @@ function fecharOwnerScreen(){document.getElementById('owner-screen').style.displ
 const EMPRESAS = {
   PF:{nome:'Porto Fortaleza',subNome:'PORTO FORTALEZA AREIA E PEDRA',endereco:'AV. PEDRO DE SOUZA LOPES N4199',rodape:'EXTRAÇÃO DE AREIA',logo:'logo.png'},
   CR:{nome:'CR Ambiental',   subNome:'CR AMBIENTAL AREIA E PEDRA',   endereco:'',                             rodape:'CR AMBIENTAL',  logo:'logo_cr.png'},
+  FUTURE:{nome:'Future Mineração',subNome:'MINERACAO FUTURE AREIA E PEDRA',endereco:'AV. PEDRO DE SOUZA LOPES N4199',rodape:'EXTRAÇÃO DE AREIA E PEDRA',logo:'logo_future.png'},
 };
 let empresa='PF';
 function setEmpresa(e){
@@ -550,6 +552,7 @@ function setEmpresa(e){
   document.getElementById('hdr-nome').textContent=emp.nome;
   document.getElementById('btn-pf').classList.toggle('active',e==='PF');
   document.getElementById('btn-cr').classList.toggle('active',e==='CR');
+  document.getElementById('btn-future').classList.toggle('active',e==='FUTURE');
 }
 
 // ══ PLACAS ══
@@ -735,7 +738,7 @@ function parsearPEDIDO(txt){
   const r={};
   const mN=txt.match(/PED[:\s]+(\d{4,6})/);if(mN)r.numero_nf=mN[1];
   const mD=txt.match(/Data[:\s]+(\d{2}\/\d{2}\/\d{4})/i);if(mD){const[d,m,y]=mD[1].split('/');r.data=`${y}-${m}-${d}`;}
-  r.empresa=/CR AMBIENTAL/i.test(txt)?'CR':/PORTO FORTALEZA/i.test(txt)?'PF':null;
+  r.empresa=/CR AMBIENTAL/i.test(txt)?'CR':/FUTURE\s+AREIA|MINERA[ÇC][ÃA]O\s+FUTURE/i.test(txt)?'FUTURE':/PORTO FORTALEZA/i.test(txt)?'PF':null;
   const mP=txt.match(/\d+\s+[A-Z]{2,5}\s+([A-ZÁÉÍÓÚÂÊÔÃÕÇ][A-ZÁÉÍÓÚÂÊÔÃÕÇ\s]+?)\s+(TON|M3|KG|UN)\s+([\d,]+)\s+[\d,\.]+\s+[\d,\.]+/);
   if(mP){r.material=mP[1].trim().toUpperCase();r.peso_carga_kg=mP[2]==='KG'?Math.round(parseFloat(mP[3].replace(',','.'))):Math.round(parseFloat(mP[3].replace(',','.'))*1000);}
   const mPl=txt.match(/\b([A-Z]{3}[-\s]?\d[A-Z0-9]\d{2})\b/);r.placa=mPl?mPl[1].replace(/[-\s]/g,''):'';
@@ -754,10 +757,13 @@ function parsearDANFE(txt){
   if(!mD)mD=txt.match(/DATA\s+DE\s+EMISS[\u00c3A]O\s+(\d{2}\/\d{2}\/\d{4})/i);
   if(!mD)mD=txt.match(/(\d{2}\/\d{2}\/\d{4})/);
   if(mD){const[d,m,y]=mD[1].split('/');r.data=`${y}-${m}-${d}`;}
-  // Empresa do remetente \u2014 PF ou CR. Pega no remetente, nao no destinatario.
-  // CNPJ PF: 20.089.905/0001-97. Se nao bater por CNPJ, cai no nome.
+  // Empresa do remetente \u2014 PF, CR ou FUTURE. Pega no remetente, nao no destinatario.
+  // CNPJ PF: 20.089.905/0001-97 \u00b7 CNPJ FUTURE: 57.067.426/0001-80.
+  // CNPJ primeiro (PF e FUTURE tem o MESMO endereco); se nao bater, cai no nome.
   if(/20\.?089\.?905\/?0001-?97/.test(txt)) r.empresa='PF';
+  else if(/57\.?067\.?426\/?0001-?80/.test(txt)) r.empresa='FUTURE';
   else if(/CR\s+AMBIENTAL/i.test(txt)) r.empresa='CR';
+  else if(/FUTURE\s+AREIA|MINERA[\u00c7C][\u00c3A]O\s+FUTURE/i.test(txt)) r.empresa='FUTURE';
   else if(/PORTO\s+FORTALEZA/i.test(txt)) r.empresa='PF';
   const mPl=txt.match(/\b([A-Z]{3}[-\s]?\d[A-Z0-9]\d{2})\b/);r.placa=mPl?mPl[1].replace(/[-\s]/g,''):'';
   const mP=txt.match(/(\d{7,8})\s+\d{3,4}\s+\d{4}\s+(TON|M3|KG|UN)\s+([\d,]+)/);
@@ -1070,7 +1076,7 @@ async function abrirPedidos() {
         </div>
         <div style="font-size:13px;color:#3A3A3C;font-weight:600">${p.material || '—'}</div>
         <div style="display:flex;gap:12px;margin-top:4px">
-          <span style="font-size:12px;color:#8A8A8E">${p.empresa === 'PF' ? '🏔 Porto Fortaleza' : '♻️ CR Ambiental'}</span>
+          <span style="font-size:12px;color:#8A8A8E">${p.empresa === 'PF' ? '🏔 Porto Fortaleza' : p.empresa === 'FUTURE' ? '⛏️ Future Mineração' : '♻️ CR Ambiental'}</span>
           ${p.quantidade ? `<span style="font-size:12px;color:#8A8A8E">${p.quantidade} ${p.unidade||'TON'}</span>` : ''}
           ${p.placa ? `<span style="font-size:12px;color:#8A8A8E">🚛 ${p.placa}</span>` : ''}
         </div>
